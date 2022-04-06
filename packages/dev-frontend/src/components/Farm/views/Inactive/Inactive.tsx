@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 import { Card, Heading, Box, Flex, Button, Link, Paragraph } from "theme-ui";
 import { useLiquity } from "../../../../hooks/LiquityContext";
+import { COIN, GT } from "../../../../strings";
 import { Icon } from "../../../Icon";
 import { InfoMessage } from "../../../InfoMessage";
 import { useFarmView } from "../../context/FarmViewContext";
@@ -31,13 +32,15 @@ export const Inactive: React.FC = () => {
         </Flex>
       </Heading>
       <Box sx={{ p: [2, 3] }}>
-        <InfoMessage title="You aren't farming LQTY.">
-          <Paragraph>You can farm LQTY by staking your Uniswap ETH/LUSD LP tokens.</Paragraph>
+        <InfoMessage title={`You aren't farming ${GT}.`}>
+          <Paragraph>
+            You can farm {GT} by staking your Uniswap ETH/{COIN} LP tokens.
+          </Paragraph>
 
           <Paragraph sx={{ mt: 2 }}>
             You can obtain LP tokens by adding liquidity to the{" "}
             <Link href={uniLink(addresses["lusdToken"])} target="_blank">
-              ETH/LUSD pool on Uniswap. <Icon name="external-link-alt" size="xs" />
+              ETH/{COIN} pool on Uniswap. <Icon name="external-link-alt" size="xs" />
             </Link>
           </Paragraph>
         </InfoMessage>
