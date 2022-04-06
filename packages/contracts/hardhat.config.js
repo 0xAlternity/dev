@@ -70,8 +70,10 @@ module.exports = {
       gas: 10000000, // tx gas limit
       blockGasLimit: 15000000,
       gasPrice: 20000000000,
+      //TODO Fix 0 gasPrice errors for london hardfork
+      //hardfork: "london"
       //initialBaseFeePerGas: 0,
-      hardfork: "london"
+      hardfork: "berlin"
     },
     mainnet: {
       url: alchemyUrl(),
