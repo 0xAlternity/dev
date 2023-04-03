@@ -1,5 +1,7 @@
 # Liquity: Decentralized Borrowing Protocol
 
+<a href="https://www.defisafety.com/pqrs/376"><img src="https://defi-safety.s3.amazonaws.com/Liquity_Badge_78e39d44ca.png" alt="DeFiSafetyBadge" align="right" style="width:228px;height:76px;"></a>
+
 ![Tests](https://github.com/liquity/dev/workflows/CI/badge.svg) [![Frontend status](https://img.shields.io/uptimerobot/status/m784948796-056b56fd51c67d682c11bb24?label=Testnet&logo=nginx&logoColor=white)](https://devui.liquity.org) ![uptime](https://img.shields.io/uptimerobot/ratio/7/m784948796-056b56fd51c67d682c11bb24) [![Discord](https://img.shields.io/discord/700620821198143498?label=join%20chat&logo=discord&logoColor=white)](https://discord.gg/2up5U32) [![Docker Pulls](https://img.shields.io/docker/pulls/liquity/dev-frontend?label=dev-frontend%20pulls&logo=docker&logoColor=white)](https://hub.docker.com/r/liquity/dev-frontend) [![codecov](https://codecov.io/gh/liquity/dev/branch/add_codecov/graph/badge.svg)](https://codecov.io/gh/liquity/dev)
 
 
@@ -123,6 +125,7 @@ Visit [liquity.org](https://www.liquity.org) to find out more and join the discu
     - [Start a local blockchain and deploy the contracts](#start-a-local-blockchain-and-deploy-the-contracts)
     - [Start dev-frontend in development mode](#start-dev-frontend-in-development-mode)
     - [Start dev-frontend in demo mode](#start-dev-frontend-in-demo-mode)
+    - [Start dev-frontend against a mainnet fork RPC node](#start-dev-frontend-against-a-mainnet-fork-rpc-node)
     - [Build dev-frontend for production](#build-dev-frontend-for-production)
   - [Configuring your custom frontend](#configuring-your-custom-dev-ui)
 - [Running a frontend with Docker](#running-dev-ui-with-docker)
@@ -410,6 +413,12 @@ The fallback logic distinguishes 3 different failure modes for Chainlink and 2 f
 There is also a return condition `bothOraclesLiveAndUnbrokenAndSimilarPrice` which is a function returning true if both oracles are live and not broken, and the percentual difference between the two reported prices is below 5%.
 
 The current `PriceFeed.sol` contract has an external `fetchPrice()` function that is called by core Liquity functions which require a current ETH:USD price.  `fetchPrice()` calls each oracle's proxy, asserts on the responses, and converts returned prices to 18 digits.
+
+### Tellor price data lag
+
+Liquity sees a Tellor ETH-USD price that is at least 15 minutes old. This is because Tellor operates via proof-of-stake, and some dispute period is needed in which fake prices can be disputed. When a Tellor price is disputed, it is removed from the list of prices that Liquity sees. This dispute period ensures that, given at least one responsive disputer who disputes fake ETH prices, Liquity will never consume fake price data from Tellor.
+
+The choice of 15 minutes for the dispute period was based on careful analysis of the impact of a delayed ETH price on a Liquity system. We used historical ETH price data and looked at the impact of different delay lengths. 15 minutes was chosen as a sweet spot that gives plenty of time for disputers to respond to fake prices, while keeping any adverse impacts on Liquity to a minimum.
 
 ### PriceFeed Logic
 
@@ -771,7 +780,7 @@ All data structures with the ‘public’ visibility specifier are ‘gettable�
 
 `getEntireSystemDebt()` Returns the systemic entire debt assigned to Troves, i.e. the sum of the LUSDDebt in the Active Pool and the Default Pool.
 
-`getTCR()`: returns the total collateralization ratio (TCR) of the system.  The TCR is based on the the entire system debt and collateral (including pending rewards).
+`getTCR()`: returns the total collateralization ratio (TCR) of the system.  The TCR is based on the entire system debt and collateral (including pending rewards).
 
 `checkRecoveryMode()`: reveals whether or not the system is in Recovery Mode (i.e. whether the Total Collateralization Ratio (TCR) is below the Critical Collateralization Ratio (CCR)).
 
@@ -783,7 +792,7 @@ All data structures with the ‘public’ visibility specifier are ‘gettable�
 
 - `firstRedemptionHint` is a positional hint for the first redeemable Trove (i.e. Trove with the lowest ICR >= MCR).
 - `partialRedemptionHintNICR` is the final nominal ICR of the last Trove after being hit by partial redemption, or zero in case of no partial redemption (see [Hints for `redeemCollateral`](#hints-for-redeemcollateral)).
-- `truncatedLUSDamount` is the maximum amount that can be redeemed out of the the provided `_LUSDamount`. This can be lower than `_LUSDamount` when redeeming the full amount would leave the last Trove of the redemption sequence with less debt than the minimum allowed value.
+- `truncatedLUSDamount` is the maximum amount that can be redeemed out of the provided `_LUSDamount`. This can be lower than `_LUSDamount` when redeeming the full amount would leave the last Trove of the redemption sequence with less debt than the minimum allowed value.
 
 The number of Troves to consider for redemption can be capped by passing a non-zero value as `_maxIterations`, while passing zero will leave it uncapped.
 
@@ -1055,7 +1064,7 @@ Stability Providers expect a positive ROI on their initial deposit. That is:
 
 When a liquidation hits the Stability Pool, it is known as an **offset**: the debt of the Trove is offset against the LUSD in the Pool. When **x** LUSD debt is offset, the debt is cancelled, and **x** LUSD in the Pool is burned. When the LUSD Stability Pool is greater than the debt of the Trove, all the Trove's debt is cancelled, and all its ETH is shared between depositors. This is a **pure offset**.
 
-It can happen that the LUSD in the Stability Pool is less than the debt of a Trove. In this case, the the whole Stability Pool will be used to offset a fraction of the Trove’s debt, and an equal fraction of the Trove’s ETH collateral will be assigned to Stability Providers. The remainder of the Trove’s debt and ETH gets redistributed to active Troves. This is a **mixed offset and redistribution**.
+It can happen that the LUSD in the Stability Pool is less than the debt of a Trove. In this case, the whole Stability Pool will be used to offset a fraction of the Trove’s debt, and an equal fraction of the Trove’s ETH collateral will be assigned to Stability Providers. The remainder of the Trove’s debt and ETH gets redistributed to active Troves. This is a **mixed offset and redistribution**.
 
 Because the ETH collateral fraction matches the offset debt fraction, the effective ICR of the collateral and debt that is offset, is equal to the ICR of the Trove. So, for depositors, the ROI per liquidation depends only on the ICR of the liquidated Trove.
 
@@ -1489,7 +1498,7 @@ This copies the contract artifacts to a version controlled area (`packages/lib/l
 yarn start-dev-chain
 ```
 
-Starts an openethereum node in a Docker container, running the [private development chain](https://openethereum.github.io/wiki/Private-development-chain), then deploys the contracts to this chain.
+Starts an openethereum node in a Docker container, running the [private development chain](https://openethereum.github.io/Private-development-chain), then deploys the contracts to this chain.
 
 You may want to use this before starting the dev-frontend in development mode. To use the newly deployed contracts, switch MetaMask to the built-in "Localhost 8545" network.
 
@@ -1531,6 +1540,25 @@ When you no longer need the demo mode, press Ctrl+C in the terminal then run:
 ```
 yarn stop-demo
 ```
+
+#### Start dev-frontend against a mainnet fork RPC node
+
+This will start a hardhat mainnet forked RPC node at the block number configured in `hardhat.config.mainnet-fork.ts`, so you need to make sure you're not running a hardhat node on port 8545 already.
+
+You'll need an Alchemy API key to create the fork.
+
+```
+ALCHEMY_API_KEY=enter_your_key_here yarn start-fork
+```
+
+```
+yarn start-demo:dev-frontend
+```
+
+This spawns a modified version of dev-frontend that automatically signs transactions so you don't need to interact with a browser wallet. It directly uses the local forked RPC node. 
+
+You may need to wait a minute or so for your fork mainnet provider to load and cache all the blockchain state at your chosen block number. Refresh the page after 5 minutes.
+
 
 #### Build dev-frontend for production
 
