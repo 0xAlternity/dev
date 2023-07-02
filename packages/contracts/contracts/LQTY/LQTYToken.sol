@@ -184,7 +184,7 @@ contract LQTYToken is CheckContract, ILQTYToken {
     }
 
     function approve(address spender, uint256 amount) external override returns (bool) {
-        if (_isFirstYear()) { _requireCallerIsNotMultisig(); }
+        // if (_isFirstYear()) { _requireCallerIsNotMultisig(); }
 
         _approve(msg.sender, spender, amount);
         return true;
