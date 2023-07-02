@@ -17,8 +17,8 @@ contract('Deploying the LQTY contracts: LCF, CI, LQTYStaking, and LQTYToken ', a
 
   const oneMillion = toBN(1000000)
   const digits = toBN(1e18)
-  const thirtyTwo = toBN(32)
-  const expectedCISupplyCap = thirtyTwo.mul(oneMillion).mul(digits)
+  const fifty = toBN(50)
+  const expectedCISupplyCap = fifty.mul(oneMillion).mul(digits)
 
   beforeEach(async () => {
     // Deploy all contracts from the first account
@@ -70,36 +70,25 @@ contract('Deploying the LQTY contracts: LCF, CI, LQTYStaking, and LQTYToken ', a
       assert.equal(lockupContractFactory.address, storedLCFAddress)
     })
 
-    it("Mints the correct LQTY amount to the multisig's address: (64.66 million)", async () => {
+    it("Mints the correct LQTY amount to the multisig's address: 25 million", async () => {
       const multisigLQTYEntitlement = await lqtyToken.balanceOf(multisig)
-
-     const twentyThreeSixes = "6".repeat(23)
-      const expectedMultisigEntitlement = "64".concat(twentyThreeSixes).concat("7")
-      assert.equal(multisigLQTYEntitlement, expectedMultisigEntitlement)
+      //(100 - 5 - 50 - 20) million = 25 million
+      assert.equal(multisigLQTYEntitlement, dec(25_000_000, 18))
     })
 
-    it("Mints the correct LQTY amount to the CommunityIssuance contract address: 32 million", async () => {
+    it("Mints the correct LQTY amount to the CommunityIssuance contract address: 50 million", async () => {
       const communityLQTYEntitlement = await lqtyToken.balanceOf(communityIssuance.address)
-      // 32 million as 18-digit decimal
-      const _32Million = dec(32, 24)
-
-      assert.equal(communityLQTYEntitlement, _32Million)
+      assert.equal(communityLQTYEntitlement, dec(50_000_000, 18))
     })
 
-    it("Mints the correct LQTY amount to the bountyAddress EOA: 2 million", async () => {
+    it("Mints the correct LQTY amount to the bountyAddress EOA: 5 million", async () => {
       const bountyAddressBal = await lqtyToken.balanceOf(bountyAddress)
-      // 2 million as 18-digit decimal
-      const _2Million = dec(2, 24)
-
-      assert.equal(bountyAddressBal, _2Million)
+      assert.equal(bountyAddressBal, dec(5_000_000, 18))
     })
 
-    it("Mints the correct LQTY amount to the lpRewardsAddress EOA: 1.33 million", async () => {
+    it("Mints the correct LQTY amount to the lpRewardsAddress EOA: 20 million", async () => {
       const lpRewardsAddressBal = await lqtyToken.balanceOf(lpRewardsAddress)
-      // 1.3 million as 18-digit decimal
-      const _1pt33Million = "1".concat("3".repeat(24))
-
-      assert.equal(lpRewardsAddressBal, _1pt33Million)
+      assert.equal(lpRewardsAddressBal, dec(20_000_000, 18))
     })
   })
 
@@ -117,7 +106,7 @@ contract('Deploying the LQTY contracts: LCF, CI, LQTYStaking, and LQTYToken ', a
       assert.isTrue(expectedCISupplyCap.eq(supplyCap))
     })
 
-    it("Liquity AG can set addresses if CI's LQTY balance is equal or greater than 32 million ", async () => {
+    it("Liquity AG can set addresses if CI's LQTY balance is equal or greater than 50 million ", async () => {
       const LQTYBalance = await lqtyToken.balanceOf(communityIssuance.address)
       assert.isTrue(LQTYBalance.eq(expectedCISupplyCap))
 
@@ -132,7 +121,7 @@ contract('Deploying the LQTY contracts: LCF, CI, LQTYStaking, and LQTYToken ', a
       assert.isTrue(tx.receipt.status)
     })
 
-    it("Liquity AG can't set addresses if CI's LQTY balance is < 32 million ", async () => {
+    it("Liquity AG can't set addresses if CI's LQTY balance is < 50 million ", async () => {
       const newCI = await CommunityIssuance.new()
 
       const LQTYBalance = await lqtyToken.balanceOf(newCI.address)
@@ -142,6 +131,8 @@ contract('Deploying the LQTY contracts: LCF, CI, LQTYStaking, and LQTYToken ', a
       const coreContracts = await deploymentHelper.deployLiquityCore()
 
       await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
+      // transfer from lpRewards to multisig as it's not enough tokens for this test in multisig
+      await lqtyToken.transfer(multisig, dec(20_000_000, 18), {from: lpRewardsAddress})
       await lqtyToken.transfer(newCI.address, '31999999999999999999999999', {from: multisig}) // 1e-18 less than CI expects (32 million)
 
       try {

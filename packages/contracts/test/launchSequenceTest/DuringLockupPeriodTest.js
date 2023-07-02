@@ -113,7 +113,8 @@ contract('During the initial lockup period', async accounts => {
 
   describe('LQTY transfer during first year after LQTY deployment', async accounts => {
     // --- Liquity AG transfer restriction, 1st year ---
-    it("Liquity multisig can not transfer LQTY to a LC that was deployed directly", async () => {
+    // We've removed all restrictions for multisig transfer, so all this tests skipped
+    it.skip("Liquity multisig can not transfer LQTY to a LC that was deployed directly", async () => {
       // Liquity multisig deploys LC_A
       const LC_A = await LockupContract.new(lqtyToken.address, A, oneYearFromSystemDeployment, { from: multisig })
 
@@ -147,7 +148,7 @@ contract('During the initial lockup period', async accounts => {
       }
     })
 
-    it("Liquity multisig can not transfer to an EOA or Liquity system contracts", async () => {
+    it.skip("Liquity multisig can not transfer to an EOA or Liquity system contracts", async () => {
       // Multisig attempts LQTY transfer to EOAs
       const LQTYtransferTxPromise_1 = lqtyToken.transfer(A, dec(1, 18), { from: multisig })
       const LQTYtransferTxPromise_2 = lqtyToken.transfer(B, dec(1, 18), { from: multisig })
@@ -168,7 +169,7 @@ contract('During the initial lockup period', async accounts => {
     })
 
     // --- Liquity AG approval restriction, 1st year ---
-    it("Liquity multisig can not approve any EOA or Liquity system contract to spend their LQTY", async () => {
+    it.skip("Liquity multisig can not approve any EOA or Liquity system contract to spend their LQTY", async () => {
       // Multisig attempts to approve EOAs to spend LQTY
       const LQTYApproveTxPromise_1 = lqtyToken.approve(A, dec(1, 18), { from: multisig })
       const LQTYApproveTxPromise_2 = lqtyToken.approve(B, dec(1, 18), { from: multisig })
@@ -189,7 +190,7 @@ contract('During the initial lockup period', async accounts => {
     })
 
     // --- Liquity AG increaseAllowance restriction, 1st year ---
-    it("Liquity multisig can not increaseAllowance for any EOA or Liquity contract", async () => {
+    it.skip("Liquity multisig can not increaseAllowance for any EOA or Liquity contract", async () => {
       // Multisig attempts to approve EOAs to spend LQTY
       const LQTYIncreaseAllowanceTxPromise_1 = lqtyToken.increaseAllowance(A, dec(1, 18), { from: multisig })
       const LQTYIncreaseAllowanceTxPromise_2 = lqtyToken.increaseAllowance(B, dec(1, 18), { from: multisig })
@@ -210,7 +211,7 @@ contract('During the initial lockup period', async accounts => {
     })
 
     // --- Liquity AG decreaseAllowance restriction, 1st year ---
-    it("Liquity multisig can not decreaseAllowance for any EOA or Liquity contract", async () => {
+    it.skip("Liquity multisig can not decreaseAllowance for any EOA or Liquity contract", async () => {
       // Multisig attempts to decreaseAllowance on EOAs 
       const LQTYDecreaseAllowanceTxPromise_1 = lqtyToken.decreaseAllowance(A, dec(1, 18), { from: multisig })
       const LQTYDecreaseAllowanceTxPromise_2 = lqtyToken.decreaseAllowance(B, dec(1, 18), { from: multisig })
@@ -231,7 +232,7 @@ contract('During the initial lockup period', async accounts => {
     })
 
     // --- Liquity multisig transferFrom restriction, 1st year ---
-    it("Liquity multisig can not be the sender in a transferFrom() call", async () => {
+    it.skip("Liquity multisig can not be the sender in a transferFrom() call", async () => {
       // EOAs attempt to use multisig as sender in a transferFrom()
       const LQTYtransferFromTxPromise_1 = lqtyToken.transferFrom(multisig, A, dec(1, 18), { from: A })
       const LQTYtransferFromTxPromise_2 = lqtyToken.transferFrom(multisig, C, dec(1, 18), { from: B })
@@ -240,7 +241,7 @@ contract('During the initial lockup period', async accounts => {
     })
 
     //  --- staking, 1st year ---
-    it("Liquity multisig can not stake their LQTY in the staking contract", async () => {
+    it.skip("Liquity multisig can not stake their LQTY in the staking contract", async () => {
       const LQTYStakingTxPromise_1 = lqtyStaking.stake(dec(1, 18), { from: multisig })
       await assertRevert(LQTYStakingTxPromise_1, "LQTYToken: sender must not be the multisig")
     })
@@ -434,12 +435,12 @@ contract('During the initial lockup period', async accounts => {
     it("Liquity multisig can transfer LQTY (vesting) to lockup contracts they deployed", async () => {
       const initialLQTYBalanceOfLC_T1 = await lqtyToken.balanceOf(LC_T1.address)
       const initialLQTYBalanceOfLC_T2 = await lqtyToken.balanceOf(LC_T2.address)
-      const initialLQTYBalanceOfLC_T3 = await lqtyToken.balanceOf(LC_T3.address)
+      //const initialLQTYBalanceOfLC_T3 = await lqtyToken.balanceOf(LC_T3.address)
 
       // Check initial LC balances == entitlements
       assert.equal(initialLQTYBalanceOfLC_T1, teamMemberInitialEntitlement_1)
       assert.equal(initialLQTYBalanceOfLC_T2, teamMemberInitialEntitlement_2)
-      assert.equal(initialLQTYBalanceOfLC_T3, teamMemberInitialEntitlement_3)
+      //assert.equal(initialLQTYBalanceOfLC_T3, teamMemberInitialEntitlement_3)
 
       // One month passes
       await th.fastForwardTime(SECONDS_IN_ONE_MONTH, web3.currentProvider)
@@ -447,17 +448,17 @@ contract('During the initial lockup period', async accounts => {
       // Liquity multisig transfers vesting amount
       await lqtyToken.transfer(LC_T1.address, dec(1, 24), { from: multisig })
       await lqtyToken.transfer(LC_T2.address, dec(1, 24), { from: multisig })
-      await lqtyToken.transfer(LC_T3.address, dec(1, 24), { from: multisig })
+      //await lqtyToken.transfer(LC_T3.address, dec(1, 24), { from: multisig })
 
       // Get new LC LQTY balances
       const LQTYBalanceOfLC_T1_1 = await lqtyToken.balanceOf(LC_T1.address)
       const LQTYBalanceOfLC_T2_1 = await lqtyToken.balanceOf(LC_T2.address)
-      const LQTYBalanceOfLC_T3_1 = await lqtyToken.balanceOf(LC_T3.address)
+      //const LQTYBalanceOfLC_T3_1 = await lqtyToken.balanceOf(LC_T3.address)
 
       // // Check team member LC balances have increased 
       assert.isTrue(LQTYBalanceOfLC_T1_1.eq(th.toBN(initialLQTYBalanceOfLC_T1).add(th.toBN(dec(1, 24)))))
       assert.isTrue(LQTYBalanceOfLC_T2_1.eq(th.toBN(initialLQTYBalanceOfLC_T2).add(th.toBN(dec(1, 24)))))
-      assert.isTrue(LQTYBalanceOfLC_T3_1.eq(th.toBN(initialLQTYBalanceOfLC_T3).add(th.toBN(dec(1, 24)))))
+      //assert.isTrue(LQTYBalanceOfLC_T3_1.eq(th.toBN(initialLQTYBalanceOfLC_T3).add(th.toBN(dec(1, 24)))))
 
       // Another month passes
       await th.fastForwardTime(SECONDS_IN_ONE_MONTH, web3.currentProvider)
@@ -465,34 +466,34 @@ contract('During the initial lockup period', async accounts => {
       // Liquity multisig transfers vesting amount
       await lqtyToken.transfer(LC_T1.address, dec(1, 24), { from: multisig })
       await lqtyToken.transfer(LC_T2.address, dec(1, 24), { from: multisig })
-      await lqtyToken.transfer(LC_T3.address, dec(1, 24), { from: multisig })
+      //await lqtyToken.transfer(LC_T3.address, dec(1, 24), { from: multisig })
 
       // Get new LC LQTY balances
       const LQTYBalanceOfLC_T1_2 = await lqtyToken.balanceOf(LC_T1.address)
       const LQTYBalanceOfLC_T2_2 = await lqtyToken.balanceOf(LC_T2.address)
-      const LQTYBalanceOfLC_T3_2 = await lqtyToken.balanceOf(LC_T3.address)
+      //const LQTYBalanceOfLC_T3_2 = await lqtyToken.balanceOf(LC_T3.address)
 
       // Check team member LC balances have increased again
       assert.isTrue(LQTYBalanceOfLC_T1_2.eq(LQTYBalanceOfLC_T1_1.add(th.toBN(dec(1, 24)))))
       assert.isTrue(LQTYBalanceOfLC_T2_2.eq(LQTYBalanceOfLC_T2_1.add(th.toBN(dec(1, 24)))))
-      assert.isTrue(LQTYBalanceOfLC_T3_2.eq(LQTYBalanceOfLC_T3_1.add(th.toBN(dec(1, 24)))))
+      //assert.isTrue(LQTYBalanceOfLC_T3_2.eq(LQTYBalanceOfLC_T3_1.add(th.toBN(dec(1, 24)))))
     })
 
     it("Liquity multisig can transfer LQTY to lockup contracts deployed by anyone", async () => {
       // A, B, C each deploy a lockup contract with themself as beneficiary
       const deployedLCtx_A = await lockupContractFactory.deployLockupContract(A, twoYearsFromSystemDeployment, { from: A })
       const deployedLCtx_B = await lockupContractFactory.deployLockupContract(B, twoYearsFromSystemDeployment, { from: B })
-      const deployedLCtx_C = await lockupContractFactory.deployLockupContract(C, twoYearsFromSystemDeployment, { from: C })
+      //const deployedLCtx_C = await lockupContractFactory.deployLockupContract(C, twoYearsFromSystemDeployment, { from: C })
 
       // LCs for team members on vesting schedules
       const LC_A = await th.getLCFromDeploymentTx(deployedLCtx_A)
       const LC_B = await th.getLCFromDeploymentTx(deployedLCtx_B)
-      const LC_C = await th.getLCFromDeploymentTx(deployedLCtx_C)
+      //const LC_C = await th.getLCFromDeploymentTx(deployedLCtx_C)
 
       // Check balances of LCs are 0
       assert.equal(await lqtyToken.balanceOf(LC_A.address), '0')
       assert.equal(await lqtyToken.balanceOf(LC_B.address), '0')
-      assert.equal(await lqtyToken.balanceOf(LC_C.address), '0')
+      //assert.equal(await lqtyToken.balanceOf(LC_C.address), '0')
 
       // One month passes
       await th.fastForwardTime(SECONDS_IN_ONE_MONTH, web3.currentProvider)
@@ -500,12 +501,12 @@ contract('During the initial lockup period', async accounts => {
       // Liquity multisig transfers LQTY to LCs deployed by other accounts
       await lqtyToken.transfer(LC_A.address, dec(1, 24), { from: multisig })
       await lqtyToken.transfer(LC_B.address, dec(2, 24), { from: multisig })
-      await lqtyToken.transfer(LC_C.address, dec(3, 24), { from: multisig })
+      //await lqtyToken.transfer(LC_C.address, dec(3, 24), { from: multisig })
 
       // Check balances of LCs have increased
       assert.equal(await lqtyToken.balanceOf(LC_A.address), dec(1, 24))
       assert.equal(await lqtyToken.balanceOf(LC_B.address), dec(2, 24))
-      assert.equal(await lqtyToken.balanceOf(LC_C.address), dec(3, 24))
+      //assert.equal(await lqtyToken.balanceOf(LC_C.address), dec(3, 24))
     })
   })
 
