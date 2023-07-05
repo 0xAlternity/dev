@@ -7,15 +7,14 @@ import { Decimal } from "@liquity/lib-base";
 
 const ALCHEMY_KEY = process.env.ALCHEMY_KEY || "";
 
-const outputFile = "eth-usd.csv";
+const outputFile = "cny-usd.csv";
 
 const phase = 2;
 const answerDecimals = 8;
 const liquityDecimals = 18;
 const answerMultiplier = BigNumber.from(10).pow(liquityDecimals - answerDecimals);
-const firstRound = BigNumber.from("0x10000000000000000").mul(phase);
 
-const aggregatorAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"; // eth-usd
+const aggregatorAddress = "0xef8a4af35cd47424672e3c590abd37fbb7a7759a"; // cny-usd
 
 const aggregatorAbi = [
   "function latestAnswer() view returns (int256)",
