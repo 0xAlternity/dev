@@ -1,5 +1,10 @@
 [
   {
+    "inputs": [],
+    "stateMutability": "nonpayable",
+    "type": "constructor"
+  },
+  {
     "anonymous": false,
     "inputs": [
       {
@@ -46,6 +51,32 @@
   },
   {
     "inputs": [],
+    "name": "CNYUSD_TELLOR_REQ_ID",
+    "outputs": [
+      {
+        "internalType": "bytes32",
+        "name": "",
+        "type": "bytes32"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "CNY_TIMEOUT",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "DECIMAL_PRECISION",
     "outputs": [
       {
@@ -62,9 +93,9 @@
     "name": "ETHUSD_TELLOR_REQ_ID",
     "outputs": [
       {
-        "internalType": "uint256",
+        "internalType": "bytes32",
         "name": "",
-        "type": "uint256"
+        "type": "bytes32"
       }
     ],
     "stateMutability": "view",
@@ -202,7 +233,20 @@
   },
   {
     "inputs": [],
-    "name": "priceAggregator",
+    "name": "priceAggregatorCny",
+    "outputs": [
+      {
+        "internalType": "contract AggregatorV3Interface",
+        "name": "",
+        "type": "address"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
+    "name": "priceAggregatorEth",
     "outputs": [
       {
         "internalType": "contract AggregatorV3Interface",
@@ -217,7 +261,12 @@
     "inputs": [
       {
         "internalType": "address",
-        "name": "_priceAggregatorAddress",
+        "name": "_priceAggregatorAddressEth",
+        "type": "address"
+      },
+      {
+        "internalType": "address",
+        "name": "_priceAggregatorAddressCny",
         "type": "address"
       },
       {

@@ -14,7 +14,7 @@ const factoryAbi = [
 
 const factoryAddress = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
 
-const hasFactory = (chainId: number) => [1, 3, 4, 5, 42].includes(chainId);
+const hasFactory = (chainId: number) => [1, 3, 4, 5, 42, 31337].includes(chainId);
 
 interface UniswapV2Factory
   extends _TypedLiquityContract<
@@ -39,11 +39,11 @@ export const createUniswapV2Pair = async (
     throw new Error(`UniswapV2Factory is not deployed on this network (chainId = ${chainId})`);
   }
 
-  const factory = (new _LiquityContract(
+  const factory = new _LiquityContract(
     factoryAddress,
     factoryAbi,
     signer
-  ) as unknown) as UniswapV2Factory;
+  ) as unknown as UniswapV2Factory;
 
   log(`Creating Uniswap v2 WETH <=> LUSD pair...`);
 
