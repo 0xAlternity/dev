@@ -1,7 +1,6 @@
 import { BigNumber } from "@ethersproject/bignumber";
 import { Provider } from "@ethersproject/abstract-provider";
-import { Signer } from "@ethersproject/abstract-signer";
-import { CallOverrides, Contract } from "@ethersproject/contracts";
+import { Signer, CallOverrides, Contract } from "ethers";
 
 import { _TypeSafeContract } from "./contracts";
 
@@ -42,9 +41,9 @@ export const _connectToMulticall = (
   chainId: number
 ): _Multicall | undefined =>
   hasMulticall(chainId)
-    ? ((new Contract(
+    ? (new Contract(
         multicallAddress[chainId],
         multicallAbi,
         signerOrProvider
-      ) as unknown) as _Multicall)
+      ) as unknown as _Multicall)
     : undefined;

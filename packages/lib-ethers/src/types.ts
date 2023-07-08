@@ -1,6 +1,6 @@
 import { BigNumberish } from "@ethersproject/bignumber";
 import { Provider } from "@ethersproject/abstract-provider";
-import { Signer } from "@ethersproject/abstract-signer";
+import { Signer } from "ethers";
 import { BlockTag, TransactionResponse, TransactionReceipt } from "@ethersproject/abstract-provider";
 import { PopulatedTransaction } from "@ethersproject/contracts";
 
@@ -68,3 +68,11 @@ export type EthersTransactionReceipt = TransactionReceipt;
  * @public
  */
 export type EthersPopulatedTransaction = PopulatedTransaction;
+
+export type OracleConfig = {
+  chainlinkEth: string;
+  chainlinkCny: string;
+  tellor: string;
+};
+
+export type OracleNetworkConfig = { [name: string]: OracleConfig };

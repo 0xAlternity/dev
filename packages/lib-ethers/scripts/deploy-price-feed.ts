@@ -1,14 +1,7 @@
 import hre from "hardhat";
+import { OracleNetworkConfig } from "../src/types";
 
-type OracleConfig = {
-  chainlinkEth: string;
-  chainlinkCny: string;
-  tellor: string;
-};
-
-type NetworkConfig = { [name: string]: OracleConfig };
-
-const oracleAddresses: NetworkConfig = {
+const oracleAddresses: OracleNetworkConfig = {
   hardhat: {
     chainlinkEth: "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419",
     chainlinkCny: "0xef8a4af35cd47424672e3c590abd37fbb7a7759a",
