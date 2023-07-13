@@ -29,7 +29,7 @@ import { ReadableLiquity } from '@liquity/lib-base';
 import { RedemptionDetails } from '@liquity/lib-base';
 import { SendableLiquity } from '@liquity/lib-base';
 import { SentLiquityTransaction } from '@liquity/lib-base';
-import { Signer } from '@ethersproject/abstract-signer';
+import { Signer } from 'ethers';
 import { StabilityDeposit } from '@liquity/lib-base';
 import { StabilityDepositChangeDetails } from '@liquity/lib-base';
 import { StabilityPoolGainsWithdrawalDetails } from '@liquity/lib-base';
@@ -239,7 +239,6 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
     readonly deploymentDate: Date;
     // @internal (undocumented)
     readonly _isDev: boolean;
-    readonly liquidityMiningLQTYRewardRate: Decimal;
     // @internal (undocumented)
     readonly _priceFeedIsTestnet: boolean;
     readonly provider: EthersProvider;
@@ -326,6 +325,18 @@ export class ObservableEthersLiquity implements ObservableLiquity {
     // (undocumented)
     watchTroveWithoutRewards(onTroveChanged: (trove: TroveWithPendingRedistribution) => void, address?: string): () => void;
 }
+
+// @public (undocumented)
+export type OracleConfig = {
+    chainlinkEth: string;
+    chainlinkCny: string;
+    tellor: string;
+};
+
+// @public (undocumented)
+export type OracleNetworkConfig = {
+    [name: string]: OracleConfig;
+};
 
 // @public
 export class PopulatableEthersLiquity implements PopulatableLiquity<EthersTransactionReceipt, EthersTransactionResponse, EthersPopulatedTransaction> {

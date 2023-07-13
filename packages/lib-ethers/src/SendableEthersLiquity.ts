@@ -34,7 +34,8 @@ const sendTransaction = <T>(tx: PopulatedEthersLiquityTransaction<T>) => tx.send
  * @public
  */
 export class SendableEthersLiquity
-  implements SendableLiquity<EthersTransactionReceipt, EthersTransactionResponse> {
+  implements SendableLiquity<EthersTransactionReceipt, EthersTransactionResponse>
+{
   private _populate: PopulatableEthersLiquity;
 
   constructor(populatable: PopulatableEthersLiquity) {
@@ -233,7 +234,8 @@ export class SendableEthersLiquity
     address?: string,
     overrides?: EthersTransactionOverrides
   ): Promise<SentEthersLiquityTransaction<void>> {
-    return this._populate._mintUniToken(amount, address, overrides).then(sendTransaction);
+    throw new Error("Method not implemented.");
+    //return this._populate._mintUniToken(amount, address, overrides).then(sendTransaction);
   }
 
   /** {@inheritDoc @liquity/lib-base#SendableLiquity.approveUniTokens} */

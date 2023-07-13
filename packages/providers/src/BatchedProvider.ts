@@ -142,147 +142,142 @@ export interface BatchedProvider extends BaseProvider {
 
 const batchedProviders: any[] = [];
 
-export const isBatchedProvider = (provider: Provider): provider is BatchedProvider =>
+export const isBatchedProvider = (provider: Provider) =>
   batchedProviders.some(batchedProvider => provider instanceof batchedProvider);
 
-export const Batched = <T extends new (...args: any[]) => BaseProvider>(Base: T) => {
-  const batchedProvider = class extends Base implements BatchedProvider {
-    batchingDelayMs = 10;
+export class BatchedWebSocketAugmentedWeb3Provider
+  extends WebSocketAugmentedWeb3Provider
+  implements BatchedProvider
+{
+  batchingDelayMs = 10;
 
-    _chainId = 0;
-    _multicall?: Multicall;
-    _timeoutId: any;
-    _batched: BatchedCalls = emptyBatch();
+  _chainId = 0;
+  _multicall?: Multicall;
+  _timeoutId: any;
+  _batched: BatchedCalls = emptyBatch();
 
-    _numberOfBatchedCalls = 0;
-    _numberOfActualCalls = 0;
-    _timeOfLastRatioCheck?: number;
+  _numberOfBatchedCalls = 0;
+  _numberOfActualCalls = 0;
+  _timeOfLastRatioCheck?: number;
 
-    get chainId() {
-      return this._chainId;
+  get chainId() {
+    return this._chainId;
+  }
+
+  set chainId(chainId: number) {
+    if (this._multicall) {
+      throw new Error("can only set chainId once");
     }
 
-    set chainId(chainId: number) {
-      if (this._multicall) {
-        throw new Error("can only set chainId once");
-      }
-
-      if (hasMulticall(chainId)) {
-        this._multicall = new Contract(multicallAddress[chainId], multicallAbi, this) as Multicall;
-      }
-
-      this._chainId = chainId;
+    if (hasMulticall(chainId)) {
+      this._multicall = new Contract(multicallAddress[chainId], multicallAbi, this) as Multicall;
     }
 
-    async _dispatchCalls() {
-      const { calls, callbacks, blockTag } = this._batched;
-      this._batched = emptyBatch();
+    this._chainId = chainId;
+  }
 
-      try {
-        const results =
-          calls.length > 1
-            ? await this._multicall!.callStatic.aggregate(calls, { blockTag }).then(
-                x => x.returnData
-              )
-            : [await super.call({ to: calls[0].target, data: calls[0].callData }, blockTag)];
+  async _dispatchCalls() {
+    const { calls, callbacks, blockTag } = this._batched;
+    this._batched = emptyBatch();
 
-        callbacks.forEach(([resolve], i) => resolve(results[i]));
-      } catch (error) {
-        callbacks.forEach(([, reject]) => reject(error));
-      }
+    try {
+      const results =
+        calls.length > 1
+          ? await this._multicall!.callStatic.aggregate(calls, { blockTag }).then(x => x.returnData)
+          : [await super.call({ to: calls[0].target, data: calls[0].callData }, blockTag)];
+
+      callbacks.forEach(([resolve], i) => resolve(results[i]));
+    } catch (error) {
+      callbacks.forEach(([, reject]) => reject(error));
+    }
+  }
+
+  _enqueueCall(call: CallRequest): Promise<string> {
+    if (this._timeoutId !== undefined) {
+      clearTimeout(this._timeoutId);
     }
 
-    _enqueueCall(call: CallRequest): Promise<string> {
-      if (this._timeoutId !== undefined) {
-        clearTimeout(this._timeoutId);
-      }
+    this._batched.calls.push(call);
+    this._timeoutId = setTimeout(() => this._dispatchCalls(), this.batchingDelayMs);
 
-      this._batched.calls.push(call);
-      this._timeoutId = setTimeout(() => this._dispatchCalls(), this.batchingDelayMs);
+    return new Promise((resolve, reject) => this._batched.callbacks.push([resolve, reject]));
+  }
 
-      return new Promise((resolve, reject) => this._batched.callbacks.push([resolve, reject]));
-    }
+  _alreadyBatchedCallsConflictWith(blockTag?: BlockTag) {
+    return (
+      this._batched.calls.length !== 0 &&
+      (blockTag ?? "latest") !== (this._batched.blockTag ?? "latest")
+    );
+  }
 
-    _alreadyBatchedCallsConflictWith(blockTag?: BlockTag) {
-      return (
-        this._batched.calls.length !== 0 &&
-        (blockTag ?? "latest") !== (this._batched.blockTag ?? "latest")
-      );
-    }
+  async call(
+    request: Deferrable<TransactionRequest>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<string> {
+    if (!this._multicall) {
+      return super.call(request, blockTag);
+    } else {
+      const now = new Date().getTime();
 
-    async call(
-      request: Deferrable<TransactionRequest>,
-      blockTag?: BlockTag | Promise<BlockTag>
-    ): Promise<string> {
-      if (!this._multicall) {
-        return super.call(request, blockTag);
+      if (this._timeOfLastRatioCheck === undefined) {
+        this._timeOfLastRatioCheck = now;
       } else {
-        const now = new Date().getTime();
+        const timeSinceLastRatioCheck = now - this._timeOfLastRatioCheck;
 
-        if (this._timeOfLastRatioCheck === undefined) {
+        if (timeSinceLastRatioCheck >= 10000 && this._numberOfActualCalls) {
+          // console.log(
+          //   `Call batching ratio: ${
+          //     Math.round((10 * this._numberOfBatchedCalls) / this._numberOfActualCalls) / 10
+          //   }X`
+          // );
+
+          this._numberOfBatchedCalls = 0;
+          this._numberOfActualCalls = 0;
           this._timeOfLastRatioCheck = now;
-        } else {
-          const timeSinceLastRatioCheck = now - this._timeOfLastRatioCheck;
-
-          if (timeSinceLastRatioCheck >= 10000 && this._numberOfActualCalls) {
-            // console.log(
-            //   `Call batching ratio: ${
-            //     Math.round((10 * this._numberOfBatchedCalls) / this._numberOfActualCalls) / 10
-            //   }X`
-            // );
-
-            this._numberOfBatchedCalls = 0;
-            this._numberOfActualCalls = 0;
-            this._timeOfLastRatioCheck = now;
-          }
         }
-      }
-
-      const [resolvedRequest, resolvedBlockTag] = await Promise.all([
-        resolveProperties(request),
-        blockTag
-      ]);
-
-      if (
-        batchedCall(resolvedRequest, this._multicall.address) ||
-        !batchableCall(resolvedRequest) ||
-        this._alreadyBatchedCallsConflictWith(resolvedBlockTag)
-      ) {
-        this._numberOfActualCalls++;
-
-        return super.call(resolvedRequest, resolvedBlockTag);
-      } else {
-        this._numberOfBatchedCalls++;
-
-        if (this._batched.calls.length === 0) {
-          this._batched.blockTag = resolvedBlockTag;
-        }
-
-        return this._enqueueCall({ target: resolvedRequest.to!, callData: resolvedRequest.data! });
       }
     }
 
-    async getBalance(
-      addressOrName: string | Promise<string>,
-      blockTag?: BlockTag | Promise<BlockTag>
-    ): Promise<BigNumber> {
-      const [resolvedAddressOrName, resolvedBlockTag] = await Promise.all([addressOrName, blockTag]);
+    const [resolvedRequest, resolvedBlockTag] = await Promise.all([
+      resolveProperties(request),
+      blockTag
+    ]);
 
-      if (!isAddress(resolvedAddressOrName) || !this._multicall) {
-        return super.getBalance(resolvedAddressOrName, blockTag);
+    if (
+      batchedCall(resolvedRequest, this._multicall.address) ||
+      !batchableCall(resolvedRequest) ||
+      this._alreadyBatchedCallsConflictWith(resolvedBlockTag)
+    ) {
+      this._numberOfActualCalls++;
+
+      return super.call(resolvedRequest, resolvedBlockTag);
+    } else {
+      this._numberOfBatchedCalls++;
+
+      if (this._batched.calls.length === 0) {
+        this._batched.blockTag = resolvedBlockTag;
       }
 
-      const [balance] = await this._multicall.functions.getEthBalance(resolvedAddressOrName, {
-        blockTag: resolvedBlockTag
-      });
-
-      return balance;
+      return this._enqueueCall({ target: resolvedRequest.to!, callData: resolvedRequest.data! });
     }
-  };
+  }
 
-  batchedProviders.push(batchedProvider);
+  async getBalance(
+    addressOrName: string | Promise<string>,
+    blockTag?: BlockTag | Promise<BlockTag>
+  ): Promise<BigNumber> {
+    const [resolvedAddressOrName, resolvedBlockTag] = await Promise.all([addressOrName, blockTag]);
 
-  return batchedProvider;
-};
+    if (!isAddress(resolvedAddressOrName) || !this._multicall) {
+      return super.getBalance(resolvedAddressOrName, blockTag);
+    }
 
-export const BatchedWebSocketAugmentedWeb3Provider = Batched(WebSocketAugmentedWeb3Provider);
+    const [balance] = await this._multicall.functions.getEthBalance(resolvedAddressOrName, {
+      blockTag: resolvedBlockTag
+    });
+
+    return balance;
+  }
+}
+
+batchedProviders.push(BatchedWebSocketAugmentedWeb3Provider);

@@ -1,4 +1,4 @@
-import { WebSocketProvider as EthersWebSocketProvider } from "@ethersproject/providers";
+import { WebSocketProvider as EthersWebSocketProvider, Network } from "@ethersproject/providers";
 
 export class WebSocketProvider extends EthersWebSocketProvider {
   get isReady() {
@@ -13,7 +13,7 @@ export class WebSocketProvider extends EthersWebSocketProvider {
     (this._websocket as WebSocket).close(code);
   }
 
-  async detectNetwork() {
+  async detectNetwork(): Promise<Network> {
     return this.network;
   }
 }
