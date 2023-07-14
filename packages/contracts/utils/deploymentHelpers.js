@@ -16,7 +16,7 @@ const LQTYToken = artifacts.require("./LQTYToken.sol")
 const LockupContractFactory = artifacts.require("./LockupContractFactory.sol")
 const CommunityIssuance = artifacts.require("./CommunityIssuance.sol")
 
-const Unipool =  artifacts.require("./Unipool.sol")
+const MerkleDistributor =  artifacts.require("./MerkleDistributor.sol")
 
 const LQTYTokenTester = artifacts.require("./LQTYTokenTester.sol")
 const CommunityIssuanceTester = artifacts.require("./CommunityIssuanceTester.sol")
@@ -102,6 +102,7 @@ class DeploymentHelper {
       stabilityPool.address,
       borrowerOperations.address
     )
+    const merkleDistributor = await MerkleDistributor.new()
     LUSDToken.setAsDeployed(lusdToken)
     DefaultPool.setAsDeployed(defaultPool)
     PriceFeedTestnet.setAsDeployed(priceFeedTestnet)
@@ -114,6 +115,7 @@ class DeploymentHelper {
     FunctionCaller.setAsDeployed(functionCaller)
     BorrowerOperations.setAsDeployed(borrowerOperations)
     HintHelpers.setAsDeployed(hintHelpers)
+    MerkleDistributor.setAsDeployed(merkleDistributor)
 
     const coreContracts = {
       priceFeedTestnet,
@@ -127,7 +129,8 @@ class DeploymentHelper {
       collSurplusPool,
       functionCaller,
       borrowerOperations,
-      hintHelpers
+      hintHelpers,
+      merkleDistributor,
     }
     return coreContracts
   }
@@ -421,6 +424,10 @@ class DeploymentHelper {
       LQTYContracts.lqtyToken.address,
       coreContracts.stabilityPool.address
     )
+  }
+
+  static async connectMerkleDistributor(merkleDistributor, tokenAddress, merkleRoot) {
+    await merkleDistributor.setParams(tokenAddress, merkleRoot)
   }
 
   static async connectUnipool(uniPool, LQTYContracts, uniswapPairAddr, duration) {
