@@ -22,6 +22,7 @@ import PriceFeedTestnet from "../../contracts/artifacts/contracts/TestContracts/
 import SortedTroves from "../../contracts/artifacts/contracts/SortedTroves.sol/SortedTroves.json";
 import StabilityPool from "../../contracts/artifacts/contracts/StabilityPool.sol/StabilityPool.json";
 import TroveManager from "../../contracts/artifacts/contracts/TroveManager.sol/TroveManager.json";
+import MerkleDistributor from "../../contracts/artifacts/contracts/Airdrop/MerkleDistributor.sol/MerkleDistributor.json";
 
 const getTupleType = (components: ParamType[], flexible: boolean) => {
   if (components.every(component => component.name)) {
@@ -160,7 +161,8 @@ const contractArtifacts = [
   PriceFeedTestnet,
   SortedTroves,
   StabilityPool,
-  TroveManager
+  TroveManager,
+  MerkleDistributor
 ];
 
 const contracts = contractArtifacts.map(({ contractName, abi }) => ({

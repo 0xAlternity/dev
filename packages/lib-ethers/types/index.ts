@@ -888,3 +888,31 @@ export interface TroveManager
   extractEvents(logs: Log[], name: "TroveSnapshotsUpdated"): _TypedLogDescription<{ _L_ETH: BigNumber; _L_LUSDDebt: BigNumber }>[];
   extractEvents(logs: Log[], name: "TroveUpdated"): _TypedLogDescription<{ _borrower: string; _debt: BigNumber; _coll: BigNumber; _stake: BigNumber; _operation: number }>[];
 }
+
+interface MerkleDistributorCalls {
+  canClaim(account: string, amount: BigNumberish, _overrides?: CallOverrides): Promise<boolean>;
+  isClaimed(account: string, _overrides?: CallOverrides): Promise<boolean>;
+  isOwner(_overrides?: CallOverrides): Promise<boolean>;
+  merkleRoot(_overrides?: CallOverrides): Promise<string>;
+  owner(_overrides?: CallOverrides): Promise<string>;
+  token(_overrides?: CallOverrides): Promise<string>;
+}
+
+interface MerkleDistributorTransactions {
+  claim(account: string, amount: BigNumberish, proof: BytesLike[], _overrides?: Overrides): Promise<void>;
+  setAddresses(_lqtyTokenAddress: string, _merkleRoot: BytesLike, _overrides?: Overrides): Promise<void>;
+}
+
+export interface MerkleDistributor
+  extends _TypedLiquityContract<MerkleDistributorCalls, MerkleDistributorTransactions> {
+  readonly filters: {
+    Claim(account?: null, amount?: null): EventFilter;
+    LQTYTokenAddressSet(_lqtyTokenAddress?: null): EventFilter;
+    MerkleRootSet(_stabilityPoolAddress?: null): EventFilter;
+    OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): EventFilter;
+  };
+  extractEvents(logs: Log[], name: "Claim"): _TypedLogDescription<{ account: string; amount: BigNumber }>[];
+  extractEvents(logs: Log[], name: "LQTYTokenAddressSet"): _TypedLogDescription<{ _lqtyTokenAddress: string }>[];
+  extractEvents(logs: Log[], name: "MerkleRootSet"): _TypedLogDescription<{ _stabilityPoolAddress: string }>[];
+  extractEvents(logs: Log[], name: "OwnershipTransferred"): _TypedLogDescription<{ previousOwner: string; newOwner: string }>[];
+}

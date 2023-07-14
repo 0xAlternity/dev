@@ -1,4 +1,4 @@
-import { Signer, ContractTransaction, ContractFactory, Overrides, Wallet } from "ethers";
+import { Signer, ContractTransaction, ContractFactory, Overrides } from "ethers";
 import { FactoryOptions } from "hardhat/types";
 
 import { Decimal } from "@liquity/lib-base";
@@ -51,7 +51,7 @@ const deployContract: (
 
 const deployContracts = async (
   deployer: Signer,
-  distribution: [string, string, string],
+  distribution: [string, string],
   getContractFactory: (name: string, signer?: Signer | FactoryOptions) => Promise<ContractFactory>,
   priceFeedIsTestnet = true,
   overrides?: Overrides
@@ -100,6 +100,9 @@ const deployContracts = async (
     }),
     gasPool: await deployContract(deployer, getContractFactory, "GasPool", {
       ...overrides
+    }),
+    merkleDistributor: await deployContract(deployer, getContractFactory, "MerkleDistributor", {
+      ...overrides
     })
   };
 
@@ -123,9 +126,9 @@ const deployContracts = async (
         addresses.communityIssuance,
         addresses.lqtyStaking,
         addresses.lockupContractFactory,
-        distribution[0], // _bountyAddress
-        distribution[1], // _lpRewardsAddress
-        distribution[2], // _multisigAddress
+        addresses.merkleDistributor,
+        distribution[0], // _lpRewardsAddress
+        distribution[1], // _multisigAddress
         { ...overrides }
       ),
 
@@ -152,6 +155,7 @@ export const deployTellorCaller = (
   deployContract(deployer, getContractFactory, "TellorCaller", tellorAddress, { ...overrides });
 
 const connectContracts = async (
+  merkleRoot: string,
   {
     activePool,
     borrowerOperations,
@@ -167,7 +171,8 @@ const connectContracts = async (
     priceFeed,
     sortedTroves,
     stabilityPool,
-    gasPool
+    gasPool,
+    merkleDistributor
   }: _LiquityContracts,
   deployer: Signer,
   overrides?: Overrides
@@ -277,6 +282,12 @@ const connectContracts = async (
       communityIssuance.setAddresses(lqtyToken.address, stabilityPool.address, {
         ...overrides,
         nonce
+      }),
+
+    nonce =>
+      merkleDistributor.setAddresses(lqtyToken.address, merkleRoot, {
+        ...overrides,
+        nonce
       })
   ];
 
@@ -288,7 +299,8 @@ const connectContracts = async (
 
 export const deployAndSetupContracts = async (
   deployer: Signer,
-  distribution: [string, string, string],
+  distribution: [string, string],
+  merkleRoot: string,
   getContractFactory: (
     name: string,
     signerOrOptions?: Signer | FactoryOptions
@@ -330,7 +342,7 @@ export const deployAndSetupContracts = async (
   const contracts = _connectToContracts(deployer, deployment);
 
   log("Connecting contracts...");
-  await connectContracts(contracts, deployer, overrides);
+  await connectContracts(merkleRoot, contracts, deployer, overrides);
 
   const lqtyTokenDeploymentTime = await contracts.lqtyToken.getDeploymentStartTime();
   const bootstrapPeriod = await contracts.troveManager.BOOTSTRAP_PERIOD();

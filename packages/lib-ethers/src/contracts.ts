@@ -30,6 +30,7 @@ import priceFeedTestnetAbi from "../abi/PriceFeedTestnet.json";
 import sortedTrovesAbi from "../abi/SortedTroves.json";
 import stabilityPoolAbi from "../abi/StabilityPool.json";
 import gasPoolAbi from "../abi/GasPool.json";
+import merkleDistributorAbi from "../abi/MerkleDistributor.json";
 
 import {
   ActivePool,
@@ -48,7 +49,8 @@ import {
   PriceFeedTestnet,
   SortedTroves,
   StabilityPool,
-  GasPool
+  GasPool,
+  MerkleDistributor
 } from "../types";
 
 export interface _TypedLogDescription<T> extends Omit<LogDescription, "args"> {
@@ -173,6 +175,7 @@ export interface _LiquityContracts {
   sortedTroves: SortedTroves;
   stabilityPool: StabilityPool;
   gasPool: GasPool;
+  merkleDistributor: MerkleDistributor;
 }
 
 /** @internal */
@@ -203,7 +206,8 @@ const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
   sortedTroves: sortedTrovesAbi,
   stabilityPool: stabilityPoolAbi,
   gasPool: gasPoolAbi,
-  collSurplusPool: collSurplusPoolAbi
+  collSurplusPool: collSurplusPoolAbi,
+  merkleDistributor: merkleDistributorAbi
 });
 
 const mapLiquityContracts = <T, U>(

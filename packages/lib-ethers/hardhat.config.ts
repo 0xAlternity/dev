@@ -55,9 +55,9 @@ const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eef
 const alchemyApiKey = process.env.ALCHEMY_API_KEY || "";
 
 // ALTR Token distribution
-const bountyAddress = process.env.BOUNTY_ADDRESS || Wallet.createRandom().address;
-const lpRewardAddress = process.env.LP_REWARD_ADDRESS || Wallet.createRandom().address;
-const multisigAddress = process.env.MULTISIG_ADDRESS || Wallet.createRandom().address;
+const LP_REWARD_ADDRESS = process.env.LP_REWARD_ADDRESS || Wallet.createRandom().address;
+const MULTISIG_ADDRESS = process.env.MULTISIG_ADDRESS || Wallet.createRandom().address;
+const MERKLE_ROOT = process.env.MERKLE_ROOT ||  "0xd0aa6a4e5b4e13462921d7518eebdb7b297a7877d6cfe078b0c318827392fb55";
 
 // https://docs.chain.link/docs/ethereum-addresses
 // https://docs.tellor.io/tellor/integration/reference-page
@@ -128,7 +128,8 @@ declare module "hardhat/types/runtime" {
   interface HardhatRuntimeEnvironment {
     deployLiquity: (
       deployer: Signer,
-      distribution: [string, string, string],
+      distribution: [string, string],
+      merkleRoot: string,
       useRealPriceFeed?: boolean,
       overrides?: Overrides
     ) => Promise<_LiquityDeploymentJSON>;
@@ -155,12 +156,14 @@ extendEnvironment(env => {
   env.deployLiquity = async (
     deployer,
     distribution,
+    merkleRoot,
     useRealPriceFeed = false,
     overrides?: Overrides
   ) => {
     const deployment = await deployAndSetupContracts(
       deployer,
       distribution,
+      merkleRoot,
       getContractFactory(env),
       !useRealPriceFeed,
       env.network.name === "dev",
@@ -197,7 +200,8 @@ task("deploy", "Deploys the contracts to the network")
 
     const deployment = await env.deployLiquity(
       deployer,
-      [bountyAddress, lpRewardAddress, multisigAddress],
+      [LP_REWARD_ADDRESS, MULTISIG_ADDRESS],
+      MERKLE_ROOT,
       real,
       overrides
     );
