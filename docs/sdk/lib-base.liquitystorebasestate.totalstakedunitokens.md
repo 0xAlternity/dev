@@ -4,8 +4,6 @@
 
 ## LiquityStoreBaseState.totalStakedUniTokens property
 
-Total amount of Uniswap ETH/LUSD LP tokens currently staked in liquidity mining.
-
 <b>Signature:</b>
 
 ```typescript

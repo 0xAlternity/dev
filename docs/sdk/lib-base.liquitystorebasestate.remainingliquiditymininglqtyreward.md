@@ -4,8 +4,6 @@
 
 ## LiquityStoreBaseState.remainingLiquidityMiningLQTYReward property
 
-Remaining LQTY that will be collectively rewarded to liquidity miners.
-
 <b>Signature:</b>
 
 ```typescript

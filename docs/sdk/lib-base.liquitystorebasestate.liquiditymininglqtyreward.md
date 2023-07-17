@@ -4,8 +4,6 @@
 
 ## LiquityStoreBaseState.liquidityMiningLQTYReward property
 
-Amount of LQTY the user has earned through mining liquidity.
-
 <b>Signature:</b>
 
 ```typescript
