@@ -306,27 +306,29 @@ export class ReadableEthersLiquity implements ReadableLiquity {
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getUniTokenBalance} */
   getUniTokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    throw new Error("Method not implemented.");
+    // throw new Error("Method not implemented.");
     // address ??= _requireAddress(this.connection);
     // const { uniToken } = _getContracts(this.connection);
 
     // return uniToken.balanceOf(address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getUniTokenAllowance} */
   getUniTokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    throw new Error("Method not implemented.");
+    // throw new Error("Method not implemented.");
     // address ??= _requireAddress(this.connection);
     // const { uniToken, unipool } = _getContracts(this.connection);
 
     // return uniToken.allowance(address, unipool.address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** @internal */
   async _getRemainingLiquidityMiningLQTYRewardCalculator(
     overrides?: EthersCallOverrides
   ): Promise<(blockTimestamp: number) => Decimal> {
-    throw new Error("Method not implemented.");
+    // throw new Error("Method not implemented.");
     // const { unipool } = _getContracts(this.connection);
 
     // const [totalSupply, rewardRate, periodFinish, lastUpdateTime] = await Promise.all([
@@ -336,10 +338,7 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     //   unipool.lastUpdateTime({ ...overrides }).then(numberify)
     // ]);
 
-    // return (blockTimestamp: number) =>
-    //   rewardRate.mul(
-    //     Math.max(0, periodFinish - (totalSupply.isZero() ? lastUpdateTime : blockTimestamp))
-    //   );
+    return (blockTimestamp: number) => Decimal.from(0)
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getRemainingLiquidityMiningLQTYReward} */
@@ -354,28 +353,31 @@ export class ReadableEthersLiquity implements ReadableLiquity {
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getLiquidityMiningStake} */
   getLiquidityMiningStake(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    throw new Error("Method not implemented.");
+    //throw new Error("Method not implemented.");
     // address ??= _requireAddress(this.connection);
     // const { unipool } = _getContracts(this.connection);
 
     // return unipool.balanceOf(address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTotalStakedUniTokens} */
   getTotalStakedUniTokens(overrides?: EthersCallOverrides): Promise<Decimal> {
-    throw new Error("Method not implemented.");
+    //throw new Error("Method not implemented.");
     // const { unipool } = _getContracts(this.connection);
 
     // return unipool.totalSupply({ ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getLiquidityMiningLQTYReward} */
   getLiquidityMiningLQTYReward(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    throw new Error("Method not implemented.");
+    //throw new Error("Method not implemented.");
     // address ??= _requireAddress(this.connection);
     // const { unipool } = _getContracts(this.connection);
 
     // return unipool.earned(address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */

@@ -1,6 +1,6 @@
 import { BigNumberish } from "@ethersproject/bignumber";
 import { Provider } from "@ethersproject/abstract-provider";
-import { Signer } from "ethers";
+import { Signer } from "@ethersproject/abstract-signer";
 import { BlockTag, TransactionResponse, TransactionReceipt } from "@ethersproject/abstract-provider";
 import { PopulatedTransaction } from "@ethersproject/contracts";
 

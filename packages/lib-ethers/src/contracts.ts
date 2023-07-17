@@ -1,6 +1,6 @@
 import { JsonFragment, LogDescription } from "@ethersproject/abi";
 import { BigNumber } from "@ethersproject/bignumber";
-import { Log, Provider } from "@ethersproject/abstract-provider";
+import { Log } from "@ethersproject/abstract-provider";
 
 import {
   Contract,
@@ -9,9 +9,8 @@ import {
   Overrides,
   CallOverrides,
   PopulatedTransaction,
-  ContractTransaction,
-  Signer
-} from "ethers";
+  ContractTransaction
+} from "@ethersproject/contracts";
 
 import activePoolAbi from "../abi/ActivePool.json";
 import borrowerOperationsAbi from "../abi/BorrowerOperations.json";
@@ -53,6 +52,8 @@ import {
   MerkleDistributor
 } from "../types";
 
+import { EthersProvider, EthersSigner } from "./types";
+
 export interface _TypedLogDescription<T> extends Omit<LogDescription, "args"> {
   args: T;
 }
@@ -80,7 +81,8 @@ type EstimatedContractFunction<R = unknown, A extends unknown[] = unknown[], O =
 type CallOverridesArg = [overrides?: CallOverrides];
 
 type TypedContract<T extends Contract, U, V> = _TypeSafeContract<T> &
-  U & {
+  U &
+  {
     [P in keyof V]: V[P] extends (...args: infer A) => unknown
       ? (...args: A) => Promise<ContractTransaction>
       : never;
@@ -138,7 +140,7 @@ export class _LiquityContract extends Contract {
   constructor(
     addressOrName: string,
     contractInterface: ContractInterface,
-    signerOrProvider?: Signer | Provider
+    signerOrProvider?: EthersSigner | EthersProvider
   ) {
     super(addressOrName, contractInterface, signerOrProvider);
 
@@ -227,13 +229,14 @@ export interface _LiquityDeploymentJSON {
   readonly startBlock: number;
   readonly bootstrapPeriod: number;
   readonly totalStabilityPoolLQTYReward: string;
+  readonly liquidityMiningLQTYRewardRate: string;
   readonly _priceFeedIsTestnet: boolean;
   readonly _isDev: boolean;
 }
 
 /** @internal */
 export const _connectToContracts = (
-  signerOrProvider: Signer | Provider,
+  signerOrProvider: EthersSigner | EthersProvider,
   { addresses, _priceFeedIsTestnet }: _LiquityDeploymentJSON
 ): _LiquityContracts => {
   const abi = getAbi(_priceFeedIsTestnet);
