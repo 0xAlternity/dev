@@ -54,12 +54,11 @@ const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eef
 //const devChainRichAccount = "0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f";
 
 const alchemyApiKey = process.env.ALCHEMY_API_KEY || "";
+const infuraApiKey = process.env.INFURA_API_KEY || "";
 
 // ALTR Token distribution
 const LP_REWARD_ADDRESS = process.env.LP_REWARD_ADDRESS || Wallet.createRandom().address;
 const MULTISIG_ADDRESS = process.env.MULTISIG_ADDRESS || Wallet.createRandom().address;
-const MERKLE_ROOT =
-  process.env.MERKLE_ROOT || "0xd0aa6a4e5b4e13462921d7518eebdb7b297a7877d6cfe078b0c318827392fb55";
 
 // https://docs.chain.link/docs/ethereum-addresses
 // https://docs.tellor.io/tellor/integration/reference-page
@@ -81,6 +80,12 @@ const oracleAddresses: OracleNetworkConfig = {
     chainlinkCny: "0x8A753747A1Fa494EC906cE90E9f37563A8AF630e",
     tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0" // Core
   }
+};
+
+const merkleRoot: { [name: string]: string } = {
+  hardhat: "0xd0aa6a4e5b4e13462921d7518eebdb7b297a7877d6cfe078b0c318827392fb55",
+  sepolia: "0x06adb08ff15350a67439b5c7bee129ee60c38c3c9be715599b9e1a308731b259",
+  mainnet: "" //TODO Update before mainnet deployment
 };
 
 const hasOracles = (network: string): boolean => network in oracleAddresses;
@@ -118,8 +123,8 @@ const config: HardhatUserConfig = {
       url: `https://polygon-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
       accounts: [deployerAccount]
     },
-    mumbai: {
-      url: `https://polygon-mumbai.g.alchemy.com/v2/${alchemyApiKey}`,
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
       accounts: [deployerAccount]
     }
   },
@@ -207,7 +212,7 @@ task("deploy", "Deploys the contracts to the network")
     const deployment = await env.deployLiquity(
       deployer,
       [LP_REWARD_ADDRESS, MULTISIG_ADDRESS],
-      MERKLE_ROOT,
+      merkleRoot[env.network.name],
       real,
       overrides
     );
