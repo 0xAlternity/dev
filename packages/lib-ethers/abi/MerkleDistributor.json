@@ -42,7 +42,7 @@
       {
         "indexed": false,
         "internalType": "bytes32",
-        "name": "_stabilityPoolAddress",
+        "name": "_merkleRoot",
         "type": "bytes32"
       }
     ],
@@ -186,7 +186,7 @@
         "type": "bytes32"
       }
     ],
-    "name": "setAddresses",
+    "name": "setParams",
     "outputs": [],
     "stateMutability": "nonpayable",
     "type": "function"

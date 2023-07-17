@@ -4,11 +4,8 @@ import { Signer } from "ethers";
 import { Decimal } from "@liquity/lib-base";
 
 import devOrNull from "../deployments/dev.json";
-import goerli from "../deployments/goerli.json";
-import kovan from "../deployments/kovan.json";
-import rinkeby from "../deployments/rinkeby.json";
-import ropsten from "../deployments/ropsten.json";
-import mainnet from "../deployments/mainnet.json";
+import sepoliaOrNull from "../deployments/sepolia.json";
+import mainnetOrNull from "../deployments/mainnet.json";
 
 import { numberify, panic } from "./_utils";
 import { EthersProvider, EthersSigner } from "./types";
@@ -23,17 +20,15 @@ import {
 import { _connectToMulticall, _Multicall } from "./_Multicall";
 
 const dev = devOrNull as _LiquityDeploymentJSON | null;
+const sepolia = sepoliaOrNull as _LiquityDeploymentJSON | null;
+const mainnet = mainnetOrNull as _LiquityDeploymentJSON | null;
 
 const deployments: {
   [chainId: number]: _LiquityDeploymentJSON | undefined;
 } = {
-  [mainnet.chainId]: mainnet,
-  [ropsten.chainId]: ropsten,
-  [rinkeby.chainId]: rinkeby,
-  [goerli.chainId]: goerli,
-  [kovan.chainId]: kovan,
-
-  ...(dev !== null ? { [dev.chainId]: dev } : {})
+  ...(dev !== null ? { [dev.chainId]: dev } : {}),
+  ...(sepolia !== null ? { [sepolia.chainId]: sepolia } : {}),
+  ...(mainnet !== null ? { [mainnet.chainId]: mainnet } : {})
 };
 
 declare const brand: unique symbol;
@@ -76,7 +71,7 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
   readonly totalStabilityPoolLQTYReward: Decimal;
 
   /** Amount of LQTY collectively rewarded to stakers of the liquidity mining pool per second. */
-  //readonly liquidityMiningLQTYRewardRate: Decimal;
+  readonly liquidityMiningLQTYRewardRate: Decimal;
 
   /** A mapping of Liquity contracts' names to their addresses. */
   readonly addresses: Record<string, string>;
@@ -103,7 +98,12 @@ const connectionFrom = (
   signer: EthersSigner | undefined,
   _contracts: _LiquityContracts,
   _multicall: _Multicall | undefined,
-  { deploymentDate, totalStabilityPoolLQTYReward, ...deployment }: _LiquityDeploymentJSON,
+  {
+    deploymentDate,
+    totalStabilityPoolLQTYReward,
+    liquidityMiningLQTYRewardRate,
+    ...deployment
+  }: _LiquityDeploymentJSON,
   optionalParams?: EthersLiquityConnectionOptionalParams
 ): _InternalEthersLiquityConnection => {
   if (
@@ -121,6 +121,7 @@ const connectionFrom = (
     _multicall,
     deploymentDate: new Date(deploymentDate),
     totalStabilityPoolLQTYReward: Decimal.from(totalStabilityPoolLQTYReward),
+    liquidityMiningLQTYRewardRate: Decimal.from(liquidityMiningLQTYRewardRate),
     ...deployment,
     ...optionalParams
   });

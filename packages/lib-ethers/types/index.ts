@@ -900,7 +900,7 @@ interface MerkleDistributorCalls {
 
 interface MerkleDistributorTransactions {
   claim(account: string, amount: BigNumberish, proof: BytesLike[], _overrides?: Overrides): Promise<void>;
-  setAddresses(_lqtyTokenAddress: string, _merkleRoot: BytesLike, _overrides?: Overrides): Promise<void>;
+  setParams(_lqtyTokenAddress: string, _merkleRoot: BytesLike, _overrides?: Overrides): Promise<void>;
 }
 
 export interface MerkleDistributor
@@ -908,11 +908,11 @@ export interface MerkleDistributor
   readonly filters: {
     Claim(account?: null, amount?: null): EventFilter;
     LQTYTokenAddressSet(_lqtyTokenAddress?: null): EventFilter;
-    MerkleRootSet(_stabilityPoolAddress?: null): EventFilter;
+    MerkleRootSet(_merkleRoot?: null): EventFilter;
     OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): EventFilter;
   };
   extractEvents(logs: Log[], name: "Claim"): _TypedLogDescription<{ account: string; amount: BigNumber }>[];
   extractEvents(logs: Log[], name: "LQTYTokenAddressSet"): _TypedLogDescription<{ _lqtyTokenAddress: string }>[];
-  extractEvents(logs: Log[], name: "MerkleRootSet"): _TypedLogDescription<{ _stabilityPoolAddress: string }>[];
+  extractEvents(logs: Log[], name: "MerkleRootSet"): _TypedLogDescription<{ _merkleRoot: string }>[];
   extractEvents(logs: Log[], name: "OwnershipTransferred"): _TypedLogDescription<{ previousOwner: string; newOwner: string }>[];
 }

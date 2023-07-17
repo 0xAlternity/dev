@@ -285,7 +285,7 @@ const connectContracts = async (
       }),
 
     nonce =>
-      merkleDistributor.setAddresses(lqtyToken.address, merkleRoot, {
+      merkleDistributor.setParams(lqtyToken.address, merkleRoot, {
         ...overrides,
         nonce
       })
@@ -321,6 +321,7 @@ export const deployAndSetupContracts = async (
     deploymentDate: new Date().getTime(),
     bootstrapPeriod: 0,
     totalStabilityPoolLQTYReward: "0",
+    liquidityMiningLQTYRewardRate: "0",
     _priceFeedIsTestnet,
     _isDev,
 

@@ -51,13 +51,15 @@ const generateRandomAccounts = (numberOfAccounts: number) => {
 
 const deployerAccount = process.env.DEPLOYER_PRIVATE_KEY || Wallet.createRandom().privateKey;
 const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eefd2f204c81682cb7";
+//const devChainRichAccount = "0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f";
 
 const alchemyApiKey = process.env.ALCHEMY_API_KEY || "";
 
 // ALTR Token distribution
 const LP_REWARD_ADDRESS = process.env.LP_REWARD_ADDRESS || Wallet.createRandom().address;
 const MULTISIG_ADDRESS = process.env.MULTISIG_ADDRESS || Wallet.createRandom().address;
-const MERKLE_ROOT = process.env.MERKLE_ROOT ||  "0xd0aa6a4e5b4e13462921d7518eebdb7b297a7877d6cfe078b0c318827392fb55";
+const MERKLE_ROOT =
+  process.env.MERKLE_ROOT || "0xd0aa6a4e5b4e13462921d7518eebdb7b297a7877d6cfe078b0c318827392fb55";
 
 // https://docs.chain.link/docs/ethereum-addresses
 // https://docs.tellor.io/tellor/integration/reference-page
@@ -100,9 +102,13 @@ const config: HardhatUserConfig = {
         blockNumber: process.env.BLOCK_NUMBER ? parseInt(process.env.BLOCK_NUMBER) : 17626950
       }
     },
-    localhost: {
+    dev: {
       url: "http://localhost:8545",
-      accounts: [deployerAccount, devChainRichAccount, ...generateRandomAccounts(numAccounts - 2)]
+      accounts: [
+        devChainRichAccount,
+        devChainRichAccount,
+        ...generateRandomAccounts(numAccounts - 2)
+      ]
     },
     mainnet: {
       url: `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
