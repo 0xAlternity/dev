@@ -4,6 +4,8 @@
 
 ## LiquityStoreBaseState.uniTokenBalance property
 
+User's Uniswap ETH/LUSD LP token balance.
+
 <b>Signature:</b>
 
 ```typescript

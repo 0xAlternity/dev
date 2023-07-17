@@ -4,6 +4,8 @@
 
 ## LiquityStoreBaseState.liquidityMiningStake property
 
+Amount of Uniswap ETH/LUSD LP tokens the user has staked in liquidity mining.
+
 <b>Signature:</b>
 
 ```typescript

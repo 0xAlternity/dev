@@ -4,6 +4,8 @@
 
 ## LiquityStoreBaseState.uniTokenAllowance property
 
+The liquidity mining contract's allowance of user's Uniswap ETH/LUSD LP tokens.
+
 <b>Signature:</b>
 
 ```typescript
