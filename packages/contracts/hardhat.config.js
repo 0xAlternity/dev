@@ -21,25 +21,26 @@ const getSecret = (secretKey, defaultValue = "") => {
 
   return secret;
 };
-const alchemyUrl = () => {
-  return `https://eth-mainnet.alchemyapi.io/v2/${getSecret("alchemyAPIKey")}`;
-};
 
-const alchemyUrlRinkeby = () => {
-  return `https://eth-rinkeby.alchemyapi.io/v2/${getSecret("alchemyAPIKeyRinkeby")}`;
-};
+const infuraApiKey = getSecret("INFURA_API_KEY", "");
 
 task("flat", "Flattens and prints contracts and their dependencies (Resolves licenses)")
   .addOptionalVariadicPositionalParam("files", "The files to flatten", undefined, types.inputFile)
   .setAction(async ({ files }, hre) => {
     let flattened = await hre.run("flatten:get-flattened-sources", { files });
-    
+
     // Remove every line started with "// SPDX-License-Identifier:"
     flattened = flattened.replace(/SPDX-License-Identifier:/gm, "License-Identifier:");
     flattened = `// SPDX-License-Identifier: MIXED\n\n${flattened}`;
 
     // Remove every line started with "pragma experimental ABIEncoderV2;" except the first one
-    flattened = flattened.replace(/pragma experimental ABIEncoderV2;\n/gm, ((i) => (m) => (!i++ ? m : ""))(0));
+    flattened = flattened.replace(
+      /pragma experimental ABIEncoderV2;\n/gm,
+      (
+        i => m =>
+          !i++ ? m : ""
+      )(0)
+    );
     console.log(flattened);
   });
 
@@ -91,8 +92,7 @@ module.exports = {
       hardfork: "berlin"
     },
     mainnet: {
-      url: alchemyUrl(),
-      gasPrice: process.env.GAS_PRICE ? parseInt(process.env.GAS_PRICE) : 20000000000,
+      url: `https://mainnet.infura.io/v3/${infuraApiKey}`,
       accounts: [
         getSecret(
           "DEPLOYER_PRIVATEKEY",
@@ -102,17 +102,18 @@ module.exports = {
           "ACCOUNT2_PRIVATEKEY",
           "0x3ec7cedbafd0cb9ec05bf9f7ccfa1e8b42b3e3a02c75addfccbfeb328d1b383b"
         )
-      ]
+      ],
+      chainId: 1
     },
-    rinkeby: {
-      url: alchemyUrlRinkeby(),
-      gas: 10000000, // tx gas limit
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
       accounts: [
         getSecret(
-          "RINKEBY_DEPLOYER_PRIVATEKEY",
+          "DEPLOYER_PRIVATEKEY",
           "0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f"
         )
-      ]
+      ],
+      chainId: 11155111
     }
   },
   etherscan: {
