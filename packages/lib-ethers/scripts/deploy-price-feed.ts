@@ -21,28 +21,45 @@ const oracleAddresses: OracleNetworkConfig = {
 
 async function main() {
   const { ethers, network } = hre;
+  console.log("Deploy started...");
+
+  const feeData = await ethers.provider.getFeeData();
+  const maxPriorityFeePerGas = ethers.utils.parseUnits("50", "gwei");
+  let maxFeePerGas = feeData.lastBaseFeePerGas || ethers.utils.parseUnits("100", "gwei");
+  maxFeePerGas = maxFeePerGas.add(ethers.utils.parseUnits("30", "gwei"));
+  maxFeePerGas = maxFeePerGas.add(maxPriorityFeePerGas);
+
+  console.log("FeeData [maxFeePerGas]", maxFeePerGas.toString());
+  console.log("FeeData [maxPriorityFeePerGas]", maxPriorityFeePerGas.toString());
+
+  const overrides = {
+    maxFeePerGas,
+    maxPriorityFeePerGas,
+    type: 2
+  };
 
   const TellorCaller = await ethers.getContractFactory("TellorCaller");
-  const PriceFeed = await ethers.getContractFactory("AltPriceFeed");
+  const PriceFeed = await ethers.getContractFactory("PriceFeed");
   const oracleConfig = oracleAddresses[network.name];
 
-  const callerInstance = await TellorCaller.deploy(oracleConfig.tellor);
-  const priceFeedInstance = await PriceFeed.deploy();
+  const callerInstance = await TellorCaller.deploy(oracleConfig.tellor, overrides);
+  const priceFeedInstance = await PriceFeed.deploy(overrides);
 
   await callerInstance.deployed();
   console.log("Tellor Called deployed", callerInstance.address);
   await priceFeedInstance.deployed();
-  console.log("AltPriceFeed deployed", priceFeedInstance.address);
+  console.log("PriceFeed deployed", priceFeedInstance.address);
 
   const connectTx = await priceFeedInstance.setAddresses(
     oracleConfig.chainlinkEth,
     oracleConfig.chainlinkCny,
-    oracleConfig.tellor
+    callerInstance.address,
+    overrides
   );
-  console.log("AltPriceFeed connected", connectTx.hash);
+  console.log("PriceFeed connected", connectTx.hash);
 
   // Fetch last price from oracles
-  await priceFeedInstance.fetchPrice();
+  await priceFeedInstance.fetchPrice(overrides);
   const lastGoodPrice = await priceFeedInstance.lastGoodPrice();
   const status = await priceFeedInstance.status();
   console.log("Price =", ethers.utils.formatEther(lastGoodPrice));
@@ -56,14 +73,18 @@ async function main() {
   const currentEthValue = await callerInstance.getTellorCurrentValue(ethQueryId);
   const currentCnyValue = await callerInstance.getTellorCurrentValue(cnyQueryId);
 
-  console.log("Current Tellor ETH/USD value", currentEthValue);
   console.log(
     "Current Tellor ETH/USD value",
     currentEthValue[0],
     ethers.utils.formatEther(currentEthValue[1]),
     new Date(parseInt(currentEthValue[2].toString()) * 1000)
   );
-  console.log("Current Tellor CNY/USD value", currentCnyValue);
+  console.log(
+    "Current Tellor CNY/USD value",
+    currentCnyValue[0],
+    ethers.utils.formatEther(currentCnyValue[1]),
+    new Date(parseInt(currentCnyValue[2].toString()) * 1000)
+  );
 }
 
 main().catch(error => {
