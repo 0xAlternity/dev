@@ -61,7 +61,7 @@ contract TellorCaller is ITellorCaller {
         )
     {
         bytes memory _valueBytes;
-        (_valueBytes, _timestampRetrieved) = getDataBefore(_queryId, block.timestamp + 1);
+        (_valueBytes, _timestampRetrieved) = getDataBefore(_queryId, block.timestamp - 15 minutes);
 
         if (_timestampRetrieved == 0) {
             return (false, 0, 0);
