@@ -51,7 +51,6 @@ const generateRandomAccounts = (numberOfAccounts: number) => {
 
 const deployerAccount = process.env.DEPLOYER_PRIVATE_KEY || Wallet.createRandom().privateKey;
 const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eefd2f204c81682cb7";
-//const devChainRichAccount = "0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f";
 
 const alchemyApiKey = process.env.ALCHEMY_API_KEY || "";
 const infuraApiKey = process.env.INFURA_API_KEY || "";
@@ -104,23 +103,15 @@ const config: HardhatUserConfig = {
       throwOnTransactionFailures: false,
       forking: {
         url: `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
-        blockNumber: process.env.BLOCK_NUMBER ? parseInt(process.env.BLOCK_NUMBER) : 17626950
+        blockNumber: process.env.BLOCK_NUMBER ? parseInt(process.env.BLOCK_NUMBER) : 17712550
       }
     },
     dev: {
       url: "http://localhost:8545",
-      accounts: [
-        devChainRichAccount,
-        devChainRichAccount,
-        ...generateRandomAccounts(numAccounts - 2)
-      ]
+      accounts: [devChainRichAccount, ...generateRandomAccounts(numAccounts - 2)]
     },
     mainnet: {
-      url: `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
-      accounts: [deployerAccount]
-    },
-    polygon: {
-      url: `https://polygon-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
+      url: `https://mainnet.infura.io/v3/${infuraApiKey}`,
       accounts: [deployerAccount]
     },
     sepolia: {
