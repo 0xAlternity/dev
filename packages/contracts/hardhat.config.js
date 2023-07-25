@@ -24,31 +24,7 @@ const getSecret = (secretKey, defaultValue = "") => {
 
 const infuraApiKey = getSecret("INFURA_API_KEY", "");
 
-task("flat", "Flattens and prints contracts and their dependencies (Resolves licenses)")
-  .addOptionalVariadicPositionalParam("files", "The files to flatten", undefined, types.inputFile)
-  .setAction(async ({ files }, hre) => {
-    let flattened = await hre.run("flatten:get-flattened-sources", { files });
-
-    // Remove every line started with "// SPDX-License-Identifier:"
-    flattened = flattened.replace(/SPDX-License-Identifier:/gm, "License-Identifier:");
-    flattened = `// SPDX-License-Identifier: MIXED\n\n${flattened}`;
-
-    // Remove every line started with "pragma experimental ABIEncoderV2;" except the first one
-    flattened = flattened.replace(
-      /pragma experimental ABIEncoderV2;\n/gm,
-      (
-        i => m =>
-          !i++ ? m : ""
-      )(0)
-    );
-    console.log(flattened);
-  });
-
 module.exports = {
-  paths: {
-    // contracts: "./contracts",
-    // artifacts: "./artifacts"
-  },
   solidity: {
     compilers: [
       {
@@ -102,8 +78,7 @@ module.exports = {
           "ACCOUNT2_PRIVATEKEY",
           "0x3ec7cedbafd0cb9ec05bf9f7ccfa1e8b42b3e3a02c75addfccbfeb328d1b383b"
         )
-      ],
-      chainId: 1
+      ]
     },
     sepolia: {
       url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
@@ -112,8 +87,7 @@ module.exports = {
           "DEPLOYER_PRIVATEKEY",
           "0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f"
         )
-      ],
-      chainId: 11155111
+      ]
     }
   },
   etherscan: {
