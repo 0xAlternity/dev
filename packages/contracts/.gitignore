@@ -44,4 +44,4 @@ build/
 reports/
 tests/simulation.csv
 
-flat
+mainnetDeployment/sepoliaDeploymentOutput.json
