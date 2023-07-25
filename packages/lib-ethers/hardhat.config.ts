@@ -63,21 +63,20 @@ const MULTISIG_ADDRESS = process.env.MULTISIG_ADDRESS || Wallet.createRandom().a
 // https://docs.tellor.io/tellor/integration/reference-page
 
 const oracleAddresses: OracleNetworkConfig = {
-  // forking mainnet
   hardhat: {
-    chainlinkEth: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    chainlinkCny: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+    chainlinkEth: "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419",
+    chainlinkCny: "0xef8a4af35cd47424672e3c590abd37fbb7a7759a",
+    tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
   },
   mainnet: {
-    chainlinkEth: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    chainlinkCny: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+    chainlinkEth: "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419",
+    chainlinkCny: "0xef8a4af35cd47424672e3c590abd37fbb7a7759a",
+    tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
   },
   polygon: {
-    chainlinkEth: "0x8A753747A1Fa494EC906cE90E9f37563A8AF630e",
-    chainlinkCny: "0x8A753747A1Fa494EC906cE90E9f37563A8AF630e",
-    tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0" // Core
+    chainlinkEth: "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+    chainlinkCny: "0x04bb437aa63e098236fa47365f0268547f6eab32",
+    tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0" // Core
   }
 };
 
