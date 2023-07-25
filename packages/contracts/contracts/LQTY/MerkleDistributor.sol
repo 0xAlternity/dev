@@ -4,7 +4,7 @@ pragma solidity 0.6.11;
 import {SafeERC20} from "../Dependencies/SafeERC20.sol";
 import {IERC20} from "../Dependencies/IERC20.sol";
 import {MerkleProof} from "../Dependencies/MerkleProof.sol";
-import {IMerkleDistributor} from "./IMerkleDistributor.sol";
+import {IMerkleDistributor} from "../Interfaces/IMerkleDistributor.sol";
 import {Ownable} from "../Dependencies/Ownable.sol";
 import {CheckContract} from "../Dependencies/CheckContract.sol";
 
