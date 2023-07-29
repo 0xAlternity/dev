@@ -45,6 +45,7 @@
     "analyze": "source-map-explorer 'build/static/js/*.js'",
     "start": "react-scripts start",
     "start-demo": "cross-env REACT_APP_DEMO_MODE=true run-s start",
+    "start-dev": "cross-env REACT_APP_DEMO_MODE=false run-s start",
     "build": "run-s build:*",
     "build:set-version": "node scripts/set-version.js",
     "build:react": "react-scripts build",
