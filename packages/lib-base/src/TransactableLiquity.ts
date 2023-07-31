@@ -520,4 +520,12 @@ export interface TransactableLiquity {
    * Throws {@link TransactionFailedError} in case of transaction failure.
    */
   registerFrontend(kickbackRate: Decimalish): Promise<void>;
+
+  /**
+   * Claim airdrop rewards.
+   *
+   * @throws
+   * Throws {@link TransactionFailedError} in case of transaction failure.
+   */
+  claimAirdrop(): Promise<void>;
 }
