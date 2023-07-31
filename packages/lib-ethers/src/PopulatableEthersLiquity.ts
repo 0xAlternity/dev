@@ -54,6 +54,7 @@ import { decimalify, promiseAllValues } from "./_utils";
 import { _priceFeedIsTestnet } from "./contracts";
 import { logsToString } from "./parseLogs";
 import { ReadableEthersLiquity } from "./ReadableEthersLiquity";
+import { _getAmountAndProofs } from "./_Airdrop";
 
 const bigNumberMax = (a: BigNumber, b?: BigNumber) => (b?.gt(a) ? b : a);
 
@@ -1417,5 +1418,30 @@ export class PopulatableEthersLiquity
     //     addGasForUnipoolRewardUpdate
     //   )
     // );
+  }
+
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.claimAirdrop} */
+  async claimAirdrop(
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<void>> {
+    const account = _requireAddress(this._readable.connection, overrides);
+    const { airdropRecipients } = this._readable.connection;
+
+    if (!airdropRecipients) {
+      throw new Error("Airdrop is not defined for this network.");
+    }
+    const { amount, proofs } = _getAmountAndProofs(airdropRecipients, account);
+
+    const { merkleDistributor } = _getContracts(this._readable.connection);
+
+    return this._wrapSimpleTransaction(
+      await merkleDistributor.estimateAndPopulate.claim(
+        { ...overrides },
+        id,
+        account,
+        amount,
+        proofs
+      )
+    );
   }
 }

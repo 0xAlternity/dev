@@ -18,6 +18,7 @@ import {
 } from "./contracts";
 
 import { _connectToMulticall, _Multicall } from "./_Multicall";
+import { _LiquityAirdropJSON, airdrops } from "./_Airdrop";
 
 const dev = devOrNull as _LiquityDeploymentJSON | null;
 const sepolia = sepoliaOrNull as _LiquityDeploymentJSON | null;
@@ -276,6 +277,9 @@ export interface EthersLiquityConnectionOptionalParams {
    * {@link @liquity/lib-base#LiquityStore.start | start()} function is called.
    */
   readonly useStore?: EthersLiquityStoreOption;
+
+  /** A mapping of airdrop addrees to amount. */
+  readonly airdropRecipients?: Record<string, string>;
 }
 
 /** @internal */
@@ -304,13 +308,15 @@ export function _connectByChainId(
   const deployment: _LiquityDeploymentJSON =
     deployments[chainId] ?? panic(new UnsupportedNetworkError(chainId));
 
+  const airdrop: _LiquityAirdropJSON | undefined = airdrops[chainId];
+
   return connectionFrom(
     provider,
     signer,
     _connectToContracts(signer ?? provider, deployment),
     _connectToMulticall(signer ?? provider, chainId),
     deployment,
-    optionalParams
+    {...optionalParams, airdropRecipients: airdrop?.recipients}
   );
 }
 

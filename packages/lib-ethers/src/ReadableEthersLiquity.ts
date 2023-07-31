@@ -1,4 +1,5 @@
 import { BlockTag } from "@ethersproject/abstract-provider";
+import { formatUnits } from "@ethersproject/units";
 
 import {
   Decimal,
@@ -322,6 +323,21 @@ export class ReadableEthersLiquity implements ReadableLiquity {
 
     // return uniToken.allowance(address, unipool.address, { ...overrides }).then(decimalify);
     return Promise.resolve(Decimal.from(0))
+  }
+
+  /** {@inheritDoc @liquity/lib-base#getAirdropClaimableLQTY} */
+  getAirdropClaimableLQTY(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    address ??= _requireAddress(this.connection);
+    const { airdropRecipients } = this.connection;
+    const amount = airdropRecipients && airdropRecipients[address] ? airdropRecipients[address] : "0"
+    return Promise.resolve(Decimal.from(formatUnits(amount, 18)))
+  }
+
+  /** {@inheritDoc @liquity/lib-base#getAirdropHasClaimed} */
+  getAirdropHasClaimed(address?: string, overrides?: EthersCallOverrides): Promise<boolean> {
+    address ??= _requireAddress(this.connection);
+    const { merkleDistributor } = _getContracts(this.connection);
+    return merkleDistributor.isClaimed(address, { ...overrides });
   }
 
   /** @internal */
@@ -657,6 +673,18 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.uniTokenAllowance
       : this._readable.getUniTokenAllowance(address, overrides);
+  }
+
+  async getAirdropClaimableLQTY(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._userHit(address, overrides)
+      ? this.store.state.airdropClaimableLQTY
+      : this._readable.getAirdropClaimableLQTY(address, overrides);
+  }
+
+  async getAirdropHasClaimed(address?: string, overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._userHit(address, overrides)
+      ? this.store.state.airdropHasClaimed
+      : this._readable.getAirdropHasClaimed(address, overrides);
   }
 
   async getRemainingLiquidityMiningLQTYReward(overrides?: EthersCallOverrides): Promise<Decimal> {

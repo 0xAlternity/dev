@@ -275,4 +275,9 @@ export class SendableEthersLiquity
   ): Promise<SentEthersLiquityTransaction<void>> {
     return this._populate.exitLiquidityMining(overrides).then(sendTransaction);
   }
+
+  /** {@inheritDoc @liquity/lib-base#SendableLiquity.claimAirdrop} */
+  claimAirdrop(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>> {
+    return this._populate.claimAirdrop(overrides).then(sendTransaction);
+  }
 }
