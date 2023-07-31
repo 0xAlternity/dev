@@ -1,5 +1,12 @@
 import hre from "hardhat";
-import { OracleNetworkConfig } from "../src/types";
+
+export type OracleConfig = {
+  chainlinkEth: string;
+  chainlinkCny: string;
+  tellor: string;
+};
+
+export type OracleNetworkConfig = { [name: string]: OracleConfig };
 
 const oracleAddresses: OracleNetworkConfig = {
   hardhat: {

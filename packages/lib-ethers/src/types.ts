@@ -68,11 +68,3 @@ export type EthersTransactionReceipt = TransactionReceipt;
  * @public
  */
 export type EthersPopulatedTransaction = PopulatedTransaction;
-
-export type OracleConfig = {
-  chainlinkEth: string;
-  chainlinkCny: string;
-  tellor: string;
-};
-
-export type OracleNetworkConfig = { [name: string]: OracleConfig };

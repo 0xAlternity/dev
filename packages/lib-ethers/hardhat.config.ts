@@ -15,7 +15,6 @@ import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from
 
 import accounts from "./accounts.json";
 import { formatEther, parseUnits } from "ethers/lib/utils";
-import { OracleNetworkConfig } from "./src/types";
 
 dotenv.config();
 
@@ -61,6 +60,14 @@ const MULTISIG_ADDRESS = process.env.MULTISIG_ADDRESS || Wallet.createRandom().a
 
 // https://docs.chain.link/docs/ethereum-addresses
 // https://docs.tellor.io/tellor/integration/reference-page
+
+export type OracleConfig = {
+  chainlinkEth: string;
+  chainlinkCny: string;
+  tellor: string;
+};
+
+export type OracleNetworkConfig = { [name: string]: OracleConfig };
 
 const oracleAddresses: OracleNetworkConfig = {
   hardhat: {

@@ -33,8 +33,7 @@
     "test": "hardhat test",
     "test-live": "run-s test-live:*",
     "test-live:check-version": "run-s check-live-version",
-    "test-live:run": "cross-env USE_LIVE_VERSION=true hardhat test",
-    "generate-merkle-root": "ts-node scripts/airdrop/index.ts"
+    "test-live:run": "cross-env USE_LIVE_VERSION=true hardhat test"
   },
   "devDependencies": {
     "@microsoft/api-extractor": "7.13.2",
