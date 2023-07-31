@@ -39,8 +39,7 @@ const supportedNetworks = ["homestead", "kovan", "rinkeby", "ropsten", "goerli"]
 export const LiquityProvider: React.FC<LiquityProviderProps> = ({
   children,
   loader,
-  unsupportedNetworkFallback,
-  unsupportedMainnetFallback
+  unsupportedNetworkFallback
 }) => {
   const { library: provider, account, chainId } = useWeb3React<Web3Provider>();
   const [config, setConfig] = useState<LiquityFrontendConfig>();
@@ -87,10 +86,6 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
 
   if (!config || !provider || !account || !chainId) {
     return <>{loader}</>;
-  }
-
-  if (config.testnetOnly && chainId === 1) {
-    return <>{unsupportedMainnetFallback}</>;
   }
 
   if (!connection) {
