@@ -4,7 +4,7 @@ import { Text, Flex, Label, Input, SxProp, Button, ThemeUICSSProperties } from "
 import { Icon } from "../Icon";
 
 type RowProps = SxProp & {
-  label: string | React.ReactNode;
+  label: string;
   labelId?: string;
   labelFor?: string;
   infoIcon?: React.ReactNode;
@@ -12,7 +12,7 @@ type RowProps = SxProp & {
 
 export const Row: React.FC<RowProps> = ({ sx, label, labelId, labelFor, children, infoIcon }) => {
   return (
-    <Flex sx={{ alignItems: "stretch", position: "relative", width: "100%", ...sx }}>
+    <Flex sx={{ alignItems: "stretch", ...sx }}>
       <Label
         id={labelId}
         htmlFor={labelFor}
@@ -21,6 +21,7 @@ export const Row: React.FC<RowProps> = ({ sx, label, labelId, labelFor, children
           pl: 3,
           pt: "12px",
           position: "absolute",
+
           fontSize: 1,
           border: 1,
           borderColor: "transparent"
@@ -63,9 +64,9 @@ const PendingAmount: React.FC<PendingAmountProps & SxProp> = ({ sx, value }) => 
 );
 
 type StaticAmountsProps = {
-  inputId?: string;
+  inputId: string;
   labelledBy?: string;
-  amount?: string;
+  amount: string;
   unit?: string;
   color?: string;
   pendingAmount?: string;
@@ -100,28 +101,26 @@ export const StaticAmounts: React.FC<StaticAmountsProps & SxProp> = ({
         ...sx
       }}
     >
-      {amount && (
-        <Flex sx={{ alignItems: "center" }}>
-          <Text sx={{ color, fontWeight: "medium" }}>{amount}</Text>
+      <Flex sx={{ alignItems: "center" }}>
+        <Text sx={{ color, fontWeight: "medium" }}>{amount}</Text>
 
-          {unit && (
-            <>
-              &nbsp;
-              <Text sx={{ fontWeight: "light", opacity: 0.8 }}>{unit}</Text>
-            </>
-          )}
+        {unit && (
+          <>
+            &nbsp;
+            <Text sx={{ fontWeight: "light", opacity: 0.8 }}>{unit}</Text>
+          </>
+        )}
 
-          {pendingAmount && (
-            <>
-              &nbsp;
-              <PendingAmount
-                sx={{ color: pendingColor, opacity: 0.8, fontSize: "0.666em" }}
-                value={pendingAmount}
-              />
-            </>
-          )}
-        </Flex>
-      )}
+        {pendingAmount && (
+          <>
+            &nbsp;
+            <PendingAmount
+              sx={{ color: pendingColor, opacity: 0.8, fontSize: "0.666em" }}
+              value={pendingAmount}
+            />
+          </>
+        )}
+      </Flex>
 
       {children}
     </Flex>
@@ -166,24 +165,10 @@ export const StaticRow: React.FC<StaticRowProps> = ({
   labelId,
   labelFor,
   infoIcon,
-  amount,
-  children,
   ...props
 }) => (
-  <Row
-    label={label}
-    labelId={labelId}
-    labelFor={labelFor}
-    infoIcon={infoIcon}
-    sx={{ mt: [-2, -3], pb: [2, 3] }}
-  >
-    {amount ? (
-      <StaticAmounts amount={amount} {...props}>
-        {children}
-      </StaticAmounts>
-    ) : (
-      children
-    )}
+  <Row {...{ label, labelId, labelFor, infoIcon }} sx={{ mt: [-2, -3], pb: [2, 3] }}>
+    <StaticAmounts {...props} />
   </Row>
 );
 
@@ -191,37 +176,21 @@ type DisabledEditableRowProps = Omit<StaticAmountsProps, "labelledBy" | "onClick
   label: string;
 };
 
-export const DisabledEditableAmounts: React.FC<StaticAmountsProps & SxProp> = ({
-  inputId,
-  children,
-  sx,
-  ...props
-}) => (
-  <StaticAmounts
-    sx={{ ...editableStyle, boxShadow: 0, ...sx }}
-    labelledBy={`${inputId}-label`}
-    inputId={inputId}
-    {...props}
-  >
-    {children}
-  </StaticAmounts>
-);
-
 export const DisabledEditableRow: React.FC<DisabledEditableRowProps> = ({
   inputId,
   label,
+  unit,
   amount,
-  children,
-  ...props
+  color,
+  pendingAmount,
+  pendingColor
 }) => (
-  <Row labelId={`${inputId}-label`} label={label}>
-    {amount ? (
-      <DisabledEditableAmounts inputId={inputId} amount={amount} {...props}>
-        {children}
-      </DisabledEditableAmounts>
-    ) : (
-      children
-    )}
+  <Row labelId={`${inputId}-label`} {...{ label, unit }}>
+    <StaticAmounts
+      sx={{ ...editableStyle, boxShadow: 0 }}
+      labelledBy={`${inputId}-label`}
+      {...{ inputId, amount, unit, color, pendingAmount, pendingColor }}
+    />
   </Row>
 );
 
