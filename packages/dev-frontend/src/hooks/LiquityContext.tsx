@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { Provider } from "@ethersproject/abstract-provider";
-// import { Signer } from "@ethersproject/abstract-signer";
 import { getNetwork } from "@ethersproject/networks";
 import { Web3Provider } from "@ethersproject/providers";
 import { useWeb3React } from "@web3-react/core";
@@ -35,7 +34,7 @@ const wsParams = (network: string, infuraApiKey: string): [string, string] => [
   network
 ];
 
-const webSocketSupportedNetworks = ["homestead", "kovan", "rinkeby", "ropsten", "goerli"];
+const supportedNetworks = ["homestead", "kovan", "rinkeby", "ropsten", "goerli"];
 
 export const LiquityProvider: React.FC<LiquityProviderProps> = ({
   children,
@@ -73,11 +72,7 @@ export const LiquityProvider: React.FC<LiquityProviderProps> = ({
       if (isWebSocketAugmentedProvider(provider)) {
         const network = getNetwork(chainId);
 
-        if (
-          network.name &&
-          webSocketSupportedNetworks.includes(network.name) &&
-          config.infuraApiKey
-        ) {
+        if (network.name && supportedNetworks.includes(network.name) && config.infuraApiKey) {
           provider.openWebSocket(...wsParams(network.name, config.infuraApiKey));
         } else if (connection._isDev) {
           provider.openWebSocket(`ws://${window.location.hostname}:8546`, chainId);

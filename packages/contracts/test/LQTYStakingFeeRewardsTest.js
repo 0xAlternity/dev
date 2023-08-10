@@ -15,8 +15,6 @@ const assertRevert = th.assertRevert
 const toBN = th.toBN
 const ZERO = th.toBN('0')
 
-const GAS_PRICE = 10000000
-
 /* NOTE: These tests do not test for specific ETH and LUSD gain values. They only test that the 
  * gains are non-zero, occur when they should, and are in correct proportion to the user's stake. 
  *
@@ -96,7 +94,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
 
     // multisig transfers LQTY to staker A
-    await lqtyToken.transfer(A, dec(100, 18), {from: multisig, gasPrice: GAS_PRICE})
+    await lqtyToken.transfer(A, dec(100, 18), {from: multisig})
 
     // console.log(`A lqty bal: ${await lqtyToken.balanceOf(A)}`)
 
@@ -110,7 +108,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), GAS_PRICE)
+    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -139,7 +137,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_YEAR, web3.currentProvider)
 
     // multisig transfers LQTY to staker A
-    await lqtyToken.transfer(A, dec(100, 18), {from: multisig, gasPrice: GAS_PRICE})
+    await lqtyToken.transfer(A, dec(100, 18), {from: multisig})
 
     // Check ETH fee per unit staked is zero
     const F_ETH_Before = await lqtyStaking.F_ETH()
@@ -147,7 +145,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), GAS_PRICE)
+    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -184,7 +182,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), gasPrice= GAS_PRICE)
+    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -228,7 +226,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -268,7 +266,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -279,7 +277,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const C_BalBeforeREdemption = await lusdToken.balanceOf(C)
     // C redeems
-    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18))
     
     const C_BalAfterRedemption = await lusdToken.balanceOf(C)
     assert.isTrue(C_BalAfterRedemption.lt(C_BalBeforeREdemption))
@@ -309,13 +307,13 @@ contract('LQTYStaking revenue share tests', async accounts => {
     const A_LUSDBalance_Before = toBN(await lusdToken.balanceOf(A))
 
     // A un-stakes
-    const GAS_Used = th.gasUsed(await lqtyStaking.unstake(dec(100, 18), {from: A, gasPrice: GAS_PRICE }))
+    await lqtyStaking.unstake(dec(100, 18), {from: A, gasPrice: 0})
 
     const A_ETHBalance_After = toBN(await web3.eth.getBalance(A))
     const A_LUSDBalance_After = toBN(await lusdToken.balanceOf(A))
 
 
-    const A_ETHGain = A_ETHBalance_After.sub(A_ETHBalance_Before).add(toBN(GAS_Used * GAS_PRICE))
+    const A_ETHGain = A_ETHBalance_After.sub(A_ETHBalance_Before)
     const A_LUSDGain = A_LUSDBalance_After.sub(A_LUSDBalance_Before)
 
     assert.isAtMost(th.getDifference(expectedTotalETHGain, A_ETHGain), 1000)
@@ -341,7 +339,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -352,7 +350,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const C_BalBeforeREdemption = await lusdToken.balanceOf(C)
     // C redeems
-    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18))
     
     const C_BalAfterRedemption = await lusdToken.balanceOf(C)
     assert.isTrue(C_BalAfterRedemption.lt(C_BalBeforeREdemption))
@@ -382,12 +380,12 @@ contract('LQTYStaking revenue share tests', async accounts => {
     const A_LUSDBalance_Before = toBN(await lusdToken.balanceOf(A))
 
     // A tops up
-    const GAS_Used = th.gasUsed(await lqtyStaking.stake(dec(50, 18), {from: A, gasPrice: GAS_PRICE }))
+    await lqtyStaking.stake(dec(50, 18), {from: A, gasPrice: 0})
 
     const A_ETHBalance_After = toBN(await web3.eth.getBalance(A))
     const A_LUSDBalance_After = toBN(await lusdToken.balanceOf(A))
 
-    const A_ETHGain = A_ETHBalance_After.sub(A_ETHBalance_Before).add(toBN(GAS_Used * GAS_PRICE))
+    const A_ETHGain = A_ETHBalance_After.sub(A_ETHBalance_Before)
     const A_LUSDGain = A_LUSDBalance_After.sub(A_LUSDBalance_Before)
 
     assert.isAtMost(th.getDifference(expectedTotalETHGain, A_ETHGain), 1000)
@@ -413,7 +411,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -424,7 +422,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const C_BalBeforeREdemption = await lusdToken.balanceOf(C)
     // C redeems
-    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18))
     
     const C_BalAfterRedemption = await lusdToken.balanceOf(C)
     assert.isTrue(C_BalAfterRedemption.lt(C_BalBeforeREdemption))
@@ -459,7 +457,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const B_BalBeforeREdemption = await lusdToken.balanceOf(B)
     // B redeems
-    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(100, 18))
     
     const B_BalAfterRedemption = await lusdToken.balanceOf(B)
     assert.isTrue(B_BalAfterRedemption.lt(B_BalBeforeREdemption))
@@ -470,7 +468,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
     const C_BalBeforeREdemption = await lusdToken.balanceOf(C)
     // C redeems
-    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(100, 18))
     
     const C_BalAfterRedemption = await lusdToken.balanceOf(C)
     assert.isTrue(C_BalAfterRedemption.lt(C_BalBeforeREdemption))
@@ -532,12 +530,12 @@ contract('LQTYStaking revenue share tests', async accounts => {
     assert.equal(await lqtyStaking.totalLQTYStaked(), dec(600, 18))
 
     // F redeems
-    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(F, contracts, dec(45, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(F, contracts, dec(45, 18))
     const emittedETHFee_1 = toBN((await th.getEmittedRedemptionValues(redemptionTx_1))[3])
     assert.isTrue(emittedETHFee_1.gt(toBN('0')))
 
      // G redeems
-     const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(G, contracts, dec(197, 18), gasPrice = GAS_PRICE)
+     const redemptionTx_2 = await th.redeemCollateralAndGetTxObject(G, contracts, dec(197, 18))
      const emittedETHFee_2 = toBN((await th.getEmittedRedemptionValues(redemptionTx_2))[3])
      assert.isTrue(emittedETHFee_2.gt(toBN('0')))
 
@@ -561,7 +559,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
     assert.equal(await lqtyStaking.totalLQTYStaked(), dec(650, 18))
 
      // G redeems
-     const redemptionTx_3 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(197, 18), gasPrice = GAS_PRICE)
+     const redemptionTx_3 = await th.redeemCollateralAndGetTxObject(C, contracts, dec(197, 18))
      const emittedETHFee_3 = toBN((await th.getEmittedRedemptionValues(redemptionTx_3))[3])
      assert.isTrue(emittedETHFee_3.gt(toBN('0')))
 
@@ -625,10 +623,10 @@ contract('LQTYStaking revenue share tests', async accounts => {
     const D_LUSDBalance_Before = toBN(await lusdToken.balanceOf(D))
 
     // A-D un-stake
-    const A_GAS_Used = th.gasUsed(await lqtyStaking.unstake(dec(100, 18), {from: A, gasPrice: GAS_PRICE }))
-    const B_GAS_Used = th.gasUsed(await lqtyStaking.unstake(dec(200, 18), {from: B, gasPrice: GAS_PRICE }))
-    const C_GAS_Used = th.gasUsed(await lqtyStaking.unstake(dec(400, 18), {from: C, gasPrice: GAS_PRICE }))
-    const D_GAS_Used = th.gasUsed(await lqtyStaking.unstake(dec(50, 18), {from: D, gasPrice: GAS_PRICE }))
+    const unstake_A = await lqtyStaking.unstake(dec(100, 18), {from: A, gasPrice: 0})
+    const unstake_B = await lqtyStaking.unstake(dec(200, 18), {from: B, gasPrice: 0})
+    const unstake_C = await lqtyStaking.unstake(dec(400, 18), {from: C, gasPrice: 0})
+    const unstake_D = await lqtyStaking.unstake(dec(50, 18), {from: D, gasPrice: 0})
 
     // Confirm all depositors could withdraw
 
@@ -647,13 +645,13 @@ contract('LQTYStaking revenue share tests', async accounts => {
     const D_LUSDBalance_After = toBN(await lusdToken.balanceOf(D))
 
     // Get ETH and LUSD gains
-    const A_ETHGain = A_ETHBalance_After.sub(A_ETHBalance_Before).add(toBN(A_GAS_Used * GAS_PRICE))
+    const A_ETHGain = A_ETHBalance_After.sub(A_ETHBalance_Before)
     const A_LUSDGain = A_LUSDBalance_After.sub(A_LUSDBalance_Before)
-    const B_ETHGain = B_ETHBalance_After.sub(B_ETHBalance_Before).add(toBN(B_GAS_Used * GAS_PRICE))
+    const B_ETHGain = B_ETHBalance_After.sub(B_ETHBalance_Before)
     const B_LUSDGain = B_LUSDBalance_After.sub(B_LUSDBalance_Before)
-    const C_ETHGain = C_ETHBalance_After.sub(C_ETHBalance_Before).add(toBN(C_GAS_Used * GAS_PRICE))
+    const C_ETHGain = C_ETHBalance_After.sub(C_ETHBalance_Before)
     const C_LUSDGain = C_LUSDBalance_After.sub(C_LUSDBalance_Before)
-    const D_ETHGain = D_ETHBalance_After.sub(D_ETHBalance_Before).add(toBN(D_GAS_Used * GAS_PRICE))
+    const D_ETHGain = D_ETHBalance_After.sub(D_ETHBalance_Before)
     const D_LUSDGain = D_LUSDBalance_After.sub(D_LUSDBalance_Before)
 
     // Check gains match expected amounts
@@ -690,7 +688,7 @@ contract('LQTYStaking revenue share tests', async accounts => {
 
 
     // B makes a redemption, creating ETH gain for proxy
-    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(45, 18), gasPrice = GAS_PRICE)
+    const redemptionTx_1 = await th.redeemCollateralAndGetTxObject(B, contracts, dec(45, 18))
     
     const proxy_ETHGain = await lqtyStaking.getPendingETHGain(nonPayable.address)
     assert.isTrue(proxy_ETHGain.gt(toBN('0')))

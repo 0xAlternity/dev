@@ -1,41 +1,64 @@
-import Tippy from "@tippyjs/react";
-import type { TippyProps } from "@tippyjs/react";
-import React from "react";
-import { Box, Card, Link } from "theme-ui";
-import { Icon } from "./Icon";
+import React, { useState, useRef } from "react";
+import { VirtualElement } from "@popperjs/core";
+import { usePopper } from "react-popper";
+import { Card } from "theme-ui";
 
-export type TooltipProps = Pick<TippyProps, "placement"> & {
-  message: React.ReactNode;
-  link?: string;
+export type Hoverable = {
+  onMouseOver: () => void;
+  onMouseOut: () => void;
+  ref: (instance: Element | VirtualElement | null) => void;
 };
 
-export type LearnMoreLinkProps = Pick<TooltipProps, "link">;
-
-export const LearnMoreLink: React.FC<LearnMoreLinkProps> = ({ link }) => {
-  return (
-    <Link href={link} target="_blank">
-      Learn more <Icon size="xs" name="external-link-alt" />
-    </Link>
-  );
+export type TooltipProps<C> = {
+  children: C;
+  message: string;
+  placement?: "top" | "bottom" | "left" | "right";
 };
 
-export const Tooltip: React.FC<TooltipProps> = ({ children, message, placement = "top", link }) => {
+export function Tooltip<C extends React.ReactElement<Hoverable>>({
+  children,
+  message,
+  placement = "top"
+}: TooltipProps<C>) {
+  const event = useRef<"over" | "out">();
+  const [show, setShow] = useState(false);
+  const [referenceElement, setReferenceElement] = useState<Element | VirtualElement | null>();
+  const [popperElement, setPopperElement] = useState<HTMLElement | null>();
+
+  const { styles, attributes } = usePopper(referenceElement, popperElement, { placement });
+
   return (
-    <Tippy
-      interactive={true}
-      placement={placement}
-      content={
-        <Card variant="tooltip">
+    <>
+      {React.cloneElement(React.Children.only<C>(children), {
+        // Use a debounced onMouseOver/onMouseOut instead of onMouseEnter/onMouseLeave to
+        // work around https://github.com/facebook/react/issues/10109
+
+        onMouseOver: () => {
+          event.current = "over";
+
+          if (!show) {
+            setShow(true);
+          }
+        },
+
+        onMouseOut: () => {
+          event.current = "out";
+
+          setTimeout(() => {
+            if (event.current === "out") {
+              setShow(false);
+            }
+          }, 0);
+        },
+
+        ref: setReferenceElement
+      })}
+
+      {show && (
+        <Card variant="tooltip" ref={setPopperElement} style={styles.popper} {...attributes.popper}>
           {message}
-          {link && (
-            <Box mt={1}>
-              <LearnMoreLink link={link} />
-            </Box>
-          )}
         </Card>
-      }
-    >
-      <span>{children}</span>
-    </Tippy>
+      )}
+    </>
   );
-};
+}

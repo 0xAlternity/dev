@@ -24,8 +24,7 @@ const colors = {
 
   text: "#293147",
   background: "white",
-  muted: "#eaebed",
-  highlight: "#efeffe"
+  muted: "#eaebed"
 };
 
 const buttonBase: ThemeUIStyleObject = {
@@ -246,10 +245,6 @@ const theme: Theme = {
       ...iconButton,
       color: "text",
       ":enabled:hover": { color: "success" }
-    },
-
-    close: {
-      cursor: "pointer"
     }
   },
 
@@ -298,30 +293,24 @@ const theme: Theme = {
     },
 
     tooltip: {
-      fontWeight: "body",
-      marginY: 1,
+      padding: 2,
 
-      a: {
-        color: "accent",
-        ":hover": {
-          opacity: 0.8
-        }
-      }
+      border: 1,
+      borderColor: "muted",
+      borderRadius: "4px",
+      bg: "background",
+      boxShadow: 2,
+
+      fontSize: 1,
+      color: "text",
+      fontWeight: "body",
+      zIndex: 1
     }
   },
 
   forms: {
     label: {
       ...formBase
-    },
-
-    radioLabel: {
-      mr: 4,
-      width: "unset",
-
-      svg: {
-        mr: 1
-      }
     },
 
     unit: {
@@ -347,6 +336,7 @@ const theme: Theme = {
       alignItems: "stretch",
 
       position: ["fixed", "relative"],
+      width: "100vw",
       top: 0,
       zIndex: 1,
 
@@ -371,7 +361,7 @@ const theme: Theme = {
 
     main: {
       width: "100%",
-      maxWidth: "1280px",
+      maxWidth: "912px",
       mx: "auto",
       mt: ["40px", 0],
       mb: ["40px", "40px"],
@@ -480,10 +470,6 @@ const theme: Theme = {
       ":hover": { color: "accent" },
       textDecoration: "none",
       fontWeight: "bold"
-    },
-
-    progress: {
-      color: colors.success
     }
   },
 
