@@ -102,6 +102,8 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     // (undocumented)
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: EthersTransactionOverrides): Promise<TroveAdjustmentDetails>;
     // (undocumented)
+    claimAirdrop(overrides?: EthersTransactionOverrides): Promise<void>;
+    // (undocumented)
     claimCollateralSurplus(overrides?: EthersTransactionOverrides): Promise<void>;
     // (undocumented)
     closeTrove(overrides?: EthersTransactionOverrides): Promise<TroveClosureDetails>;
@@ -125,6 +127,10 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     static _from(connection: EthersLiquityConnection): EthersLiquity;
     // @internal (undocumented)
     _getActivePool(overrides?: EthersCallOverrides): Promise<Trove>;
+    // (undocumented)
+    getAirdropClaimableLQTY(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
+    // (undocumented)
+    getAirdropHasClaimed(address?: string, overrides?: EthersCallOverrides): Promise<boolean>;
     // @internal (undocumented)
     _getBlockTimestamp(blockTag?: BlockTag): Promise<number>;
     // (undocumented)
@@ -251,6 +257,7 @@ export interface EthersLiquityConnection extends EthersLiquityConnectionOptional
 
 // @public
 export interface EthersLiquityConnectionOptionalParams {
+    readonly airdropRecipients?: Record<string, string>;
     readonly frontendTag?: string;
     readonly userAddress?: string;
     readonly useStore?: EthersLiquityStoreOption;
@@ -336,6 +343,8 @@ export class PopulatableEthersLiquity implements PopulatableLiquity<EthersTransa
     approveUniTokens(allowance?: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<void>>;
     // (undocumented)
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<TroveAdjustmentDetails>>;
+    // (undocumented)
+    claimAirdrop(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<void>>;
     // (undocumented)
     claimCollateralSurplus(overrides?: EthersTransactionOverrides): Promise<PopulatedEthersLiquityTransaction<void>>;
     // (undocumented)
@@ -460,6 +469,10 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     static _from(connection: EthersLiquityConnection): ReadableEthersLiquity;
     // @internal (undocumented)
     _getActivePool(overrides?: EthersCallOverrides): Promise<Trove>;
+    // (undocumented)
+    getAirdropClaimableLQTY(address?: string, overrides?: EthersCallOverrides): Promise<Decimal>;
+    // (undocumented)
+    getAirdropHasClaimed(address?: string, overrides?: EthersCallOverrides): Promise<boolean>;
     // @internal (undocumented)
     _getBlockTimestamp(blockTag?: BlockTag): Promise<number>;
     // (undocumented)
@@ -539,6 +552,8 @@ export class SendableEthersLiquity implements SendableLiquity<EthersTransactionR
     approveUniTokens(allowance?: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
     // (undocumented)
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish, overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<TroveAdjustmentDetails>>;
+    // (undocumented)
+    claimAirdrop(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
     // (undocumented)
     claimCollateralSurplus(overrides?: EthersTransactionOverrides): Promise<SentEthersLiquityTransaction<void>>;
     // (undocumented)

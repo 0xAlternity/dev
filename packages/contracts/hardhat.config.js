@@ -3,6 +3,7 @@ require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-etherscan");
 require("solidity-coverage");
 require("hardhat-gas-reporter");
+require("hardhat-tracer");
 
 const accounts = require("./hardhatAccountsList2k.js");
 const accountsList = accounts.accountsList;
@@ -20,19 +21,10 @@ const getSecret = (secretKey, defaultValue = "") => {
 
   return secret;
 };
-const alchemyUrl = () => {
-  return `https://eth-mainnet.alchemyapi.io/v2/${getSecret("alchemyAPIKey")}`;
-};
 
-const alchemyUrlRinkeby = () => {
-  return `https://eth-rinkeby.alchemyapi.io/v2/${getSecret("alchemyAPIKeyRinkeby")}`;
-};
+const infuraApiKey = getSecret("INFURA_API_KEY", "");
 
 module.exports = {
-  paths: {
-    // contracts: "./contracts",
-    // artifacts: "./artifacts"
-  },
   solidity: {
     compilers: [
       {
@@ -76,8 +68,7 @@ module.exports = {
       hardfork: "berlin"
     },
     mainnet: {
-      url: alchemyUrl(),
-      gasPrice: process.env.GAS_PRICE ? parseInt(process.env.GAS_PRICE) : 20000000000,
+      url: `https://mainnet.infura.io/v3/${infuraApiKey}`,
       accounts: [
         getSecret(
           "DEPLOYER_PRIVATEKEY",
@@ -89,12 +80,11 @@ module.exports = {
         )
       ]
     },
-    rinkeby: {
-      url: alchemyUrlRinkeby(),
-      gas: 10000000, // tx gas limit
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
       accounts: [
         getSecret(
-          "RINKEBY_DEPLOYER_PRIVATEKEY",
+          "DEPLOYER_PRIVATEKEY",
           "0x60ddfe7f579ab6867cbe7a2dc03853dc141d7a4ab6dbefc0dae2d2b1bd4e487f"
         )
       ]

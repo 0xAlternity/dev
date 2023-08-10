@@ -8,6 +8,10 @@
 export class _CachedReadableLiquity<T extends unknown[]> implements _ReadableLiquityWithExtraParams<T> {
     constructor(readable: _ReadableLiquityWithExtraParams<T>, cache: _LiquityReadCache<T>);
     // (undocumented)
+    getAirdropClaimableLQTY(address?: string, ...extraParams: T): Promise<Decimal>;
+    // (undocumented)
+    getAirdropHasClaimed(address?: string, ...extraParams: T): Promise<boolean>;
+    // (undocumented)
     getCollateralSurplusBalance(address?: string, ...extraParams: T): Promise<Decimal>;
     // (undocumented)
     getFees(...extraParams: T): Promise<Fees>;
@@ -259,6 +263,8 @@ export abstract class LiquityStore<T = unknown> {
 // @public
 export interface LiquityStoreBaseState {
     accountBalance: Decimal;
+    airdropClaimableLQTY: Decimal;
+    airdropHasClaimed: boolean;
     collateralSurplusBalance: Decimal;
     // @internal (undocumented)
     _feesInNormalMode: Fees;
@@ -447,6 +453,7 @@ export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown> exten
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
     approveUniTokens(allowance?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
+    claimAirdrop(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     claimCollateralSurplus(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
     closeTrove(): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveClosureDetails>>>>;
     depositCollateral(amount: Decimalish): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, TroveAdjustmentDetails>>>>;
@@ -490,6 +497,8 @@ export interface PopulatedRedemption<P = unknown, S = unknown, R = unknown> exte
 
 // @public
 export interface ReadableLiquity {
+    getAirdropClaimableLQTY(address?: string): Promise<Decimal>;
+    getAirdropHasClaimed(address?: string): Promise<boolean>;
     getCollateralSurplusBalance(address?: string): Promise<Decimal>;
     getFees(): Promise<Fees>;
     getFrontendStatus(address?: string): Promise<FrontendStatus>;
@@ -644,6 +653,7 @@ export interface TransactableLiquity {
     adjustTrove(params: TroveAdjustmentParams<Decimalish>, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
     approveUniTokens(allowance?: Decimalish): Promise<void>;
     borrowLUSD(amount: Decimalish, maxBorrowingRate?: Decimalish): Promise<TroveAdjustmentDetails>;
+    claimAirdrop(): Promise<void>;
     claimCollateralSurplus(): Promise<void>;
     closeTrove(): Promise<TroveClosureDetails>;
     depositCollateral(amount: Decimalish): Promise<TroveAdjustmentDetails>;

@@ -1,4 +1,5 @@
 import { BlockTag } from "@ethersproject/abstract-provider";
+import { formatUnits } from "@ethersproject/units";
 
 import {
   Decimal,
@@ -214,10 +215,9 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const { activePool } = _getContracts(this.connection);
 
     const [activeCollateral, activeDebt] = await Promise.all(
-      [
-        activePool.getETH({ ...overrides }),
-        activePool.getLUSDDebt({ ...overrides })
-      ].map(getBigNumber => getBigNumber.then(decimalify))
+      [activePool.getETH({ ...overrides }), activePool.getLUSDDebt({ ...overrides })].map(
+        getBigNumber => getBigNumber.then(decimalify)
+      )
     );
 
     return new Trove(activeCollateral, activeDebt);
@@ -228,10 +228,9 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     const { defaultPool } = _getContracts(this.connection);
 
     const [liquidatedCollateral, closedDebt] = await Promise.all(
-      [
-        defaultPool.getETH({ ...overrides }),
-        defaultPool.getLUSDDebt({ ...overrides })
-      ].map(getBigNumber => getBigNumber.then(decimalify))
+      [defaultPool.getETH({ ...overrides }), defaultPool.getLUSDDebt({ ...overrides })].map(
+        getBigNumber => getBigNumber.then(decimalify)
+      )
     );
 
     return new Trove(liquidatedCollateral, closedDebt);
@@ -255,17 +254,13 @@ export class ReadableEthersLiquity implements ReadableLiquity {
     address ??= _requireAddress(this.connection);
     const { stabilityPool } = _getContracts(this.connection);
 
-    const [
-      { frontEndTag, initialValue },
-      currentLUSD,
-      collateralGain,
-      lqtyReward
-    ] = await Promise.all([
-      stabilityPool.deposits(address, { ...overrides }),
-      stabilityPool.getCompoundedLUSDDeposit(address, { ...overrides }),
-      stabilityPool.getDepositorETHGain(address, { ...overrides }),
-      stabilityPool.getDepositorLQTYGain(address, { ...overrides })
-    ]);
+    const [{ frontEndTag, initialValue }, currentLUSD, collateralGain, lqtyReward] =
+      await Promise.all([
+        stabilityPool.deposits(address, { ...overrides }),
+        stabilityPool.getCompoundedLUSDDeposit(address, { ...overrides }),
+        stabilityPool.getDepositorETHGain(address, { ...overrides }),
+        stabilityPool.getDepositorLQTYGain(address, { ...overrides })
+      ]);
 
     return new StabilityDeposit(
       decimalify(initialValue),
@@ -312,37 +307,54 @@ export class ReadableEthersLiquity implements ReadableLiquity {
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getUniTokenBalance} */
   getUniTokenBalance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    address ??= _requireAddress(this.connection);
-    const { uniToken } = _getContracts(this.connection);
+    // throw new Error("Method not implemented.");
+    // address ??= _requireAddress(this.connection);
+    // const { uniToken } = _getContracts(this.connection);
 
-    return uniToken.balanceOf(address, { ...overrides }).then(decimalify);
+    // return uniToken.balanceOf(address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getUniTokenAllowance} */
   getUniTokenAllowance(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    address ??= _requireAddress(this.connection);
-    const { uniToken, unipool } = _getContracts(this.connection);
+    // throw new Error("Method not implemented.");
+    // address ??= _requireAddress(this.connection);
+    // const { uniToken, unipool } = _getContracts(this.connection);
 
-    return uniToken.allowance(address, unipool.address, { ...overrides }).then(decimalify);
+    // return uniToken.allowance(address, unipool.address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
+  }
+
+  /** {@inheritDoc @liquity/lib-base#getAirdropClaimableLQTY} */
+  getAirdropClaimableLQTY(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    address ??= _requireAddress(this.connection);
+    const { airdropRecipients } = this.connection;
+    const amount = airdropRecipients && airdropRecipients[address] ? airdropRecipients[address] : "0"
+    return Promise.resolve(Decimal.from(formatUnits(amount, 18)))
+  }
+
+  /** {@inheritDoc @liquity/lib-base#getAirdropHasClaimed} */
+  getAirdropHasClaimed(address?: string, overrides?: EthersCallOverrides): Promise<boolean> {
+    address ??= _requireAddress(this.connection);
+    const { merkleDistributor } = _getContracts(this.connection);
+    return merkleDistributor.isClaimed(address, { ...overrides });
   }
 
   /** @internal */
   async _getRemainingLiquidityMiningLQTYRewardCalculator(
     overrides?: EthersCallOverrides
   ): Promise<(blockTimestamp: number) => Decimal> {
-    const { unipool } = _getContracts(this.connection);
+    // throw new Error("Method not implemented.");
+    // const { unipool } = _getContracts(this.connection);
 
-    const [totalSupply, rewardRate, periodFinish, lastUpdateTime] = await Promise.all([
-      unipool.totalSupply({ ...overrides }),
-      unipool.rewardRate({ ...overrides }).then(decimalify),
-      unipool.periodFinish({ ...overrides }).then(numberify),
-      unipool.lastUpdateTime({ ...overrides }).then(numberify)
-    ]);
+    // const [totalSupply, rewardRate, periodFinish, lastUpdateTime] = await Promise.all([
+    //   unipool.totalSupply({ ...overrides }),
+    //   unipool.rewardRate({ ...overrides }).then(decimalify),
+    //   unipool.periodFinish({ ...overrides }).then(numberify),
+    //   unipool.lastUpdateTime({ ...overrides }).then(numberify)
+    // ]);
 
-    return (blockTimestamp: number) =>
-      rewardRate.mul(
-        Math.max(0, periodFinish - (totalSupply.isZero() ? lastUpdateTime : blockTimestamp))
-      );
+    return (blockTimestamp: number) => Decimal.from(0)
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getRemainingLiquidityMiningLQTYReward} */
@@ -357,25 +369,31 @@ export class ReadableEthersLiquity implements ReadableLiquity {
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getLiquidityMiningStake} */
   getLiquidityMiningStake(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    address ??= _requireAddress(this.connection);
-    const { unipool } = _getContracts(this.connection);
+    //throw new Error("Method not implemented.");
+    // address ??= _requireAddress(this.connection);
+    // const { unipool } = _getContracts(this.connection);
 
-    return unipool.balanceOf(address, { ...overrides }).then(decimalify);
+    // return unipool.balanceOf(address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getTotalStakedUniTokens} */
   getTotalStakedUniTokens(overrides?: EthersCallOverrides): Promise<Decimal> {
-    const { unipool } = _getContracts(this.connection);
+    //throw new Error("Method not implemented.");
+    // const { unipool } = _getContracts(this.connection);
 
-    return unipool.totalSupply({ ...overrides }).then(decimalify);
+    // return unipool.totalSupply({ ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getLiquidityMiningLQTYReward} */
   getLiquidityMiningLQTYReward(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
-    address ??= _requireAddress(this.connection);
-    const { unipool } = _getContracts(this.connection);
+    //throw new Error("Method not implemented.");
+    // address ??= _requireAddress(this.connection);
+    // const { unipool } = _getContracts(this.connection);
 
-    return unipool.earned(address, { ...overrides }).then(decimalify);
+    // return unipool.earned(address, { ...overrides }).then(decimalify);
+    return Promise.resolve(Decimal.from(0))
   }
 
   /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getCollateralSurplusBalance} */
@@ -536,7 +554,8 @@ export interface ReadableEthersLiquityWithStore<T extends LiquityStore = Liquity
 }
 
 class _BlockPolledReadableEthersLiquity
-  implements ReadableEthersLiquityWithStore<BlockPolledLiquityStore> {
+  implements ReadableEthersLiquityWithStore<BlockPolledLiquityStore>
+{
   readonly connection: EthersLiquityConnection;
   readonly store: BlockPolledLiquityStore;
 
@@ -654,6 +673,18 @@ class _BlockPolledReadableEthersLiquity
     return this._userHit(address, overrides)
       ? this.store.state.uniTokenAllowance
       : this._readable.getUniTokenAllowance(address, overrides);
+  }
+
+  async getAirdropClaimableLQTY(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._userHit(address, overrides)
+      ? this.store.state.airdropClaimableLQTY
+      : this._readable.getAirdropClaimableLQTY(address, overrides);
+  }
+
+  async getAirdropHasClaimed(address?: string, overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._userHit(address, overrides)
+      ? this.store.state.airdropHasClaimed
+      : this._readable.getAirdropHasClaimed(address, overrides);
   }
 
   async getRemainingLiquidityMiningLQTYReward(overrides?: EthersCallOverrides): Promise<Decimal> {

@@ -1,7 +1,7 @@
 import { Theme, ThemeUIStyleObject } from "theme-ui";
 
 const baseColors = {
-  blue: "#1542cd",
+  blue: "#1838E8",
   purple: "#745ddf",
   cyan: "#2eb6ea",
   green: "#28c081",
@@ -151,6 +151,7 @@ const theme: Theme = {
 
   fonts: {
     body: [
+      "IBM Plex Sans",
       "system-ui",
       "-apple-system",
       "BlinkMacSystemFont",

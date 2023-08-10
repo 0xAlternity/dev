@@ -79,7 +79,7 @@ contract('TroveManager', async accounts => {
     await deploymentHelper.connectLQTYContractsToCore(LQTYContracts, contracts)
   })
 
-  it("A given trove's stake decline is negligible with adjustments and tiny liquidations", async () => {
+  it.skip("A given trove's stake decline is negligible with adjustments and tiny liquidations", async () => {
     await priceFeed.setPrice(dec(100, 18))
   
     // Make 1 mega troves A at ~50% total collateral

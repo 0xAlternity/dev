@@ -143,6 +143,20 @@ export class _CachedReadableLiquity<T extends unknown[]>
     );
   }
 
+  async getAirdropClaimableLQTY(address?: string, ...extraParams: T): Promise<Decimal> {
+    return (
+      this._cache.getAirdropClaimableLQTY(address, ...extraParams) ??
+      this._readable.getAirdropClaimableLQTY(address, ...extraParams)
+    );
+  }
+
+  async getAirdropHasClaimed(address?: string, ...extraParams: T): Promise<boolean> {
+    return (
+      this._cache.getAirdropHasClaimed(address, ...extraParams) ??
+      this._readable.getAirdropHasClaimed(address, ...extraParams)
+    );
+  }
+
   async getRemainingLiquidityMiningLQTYReward(...extraParams: T): Promise<Decimal> {
     return (
       this._cache.getRemainingLiquidityMiningLQTYReward(...extraParams) ??

@@ -99,6 +99,12 @@ export interface LiquityStoreBaseState {
   /** Total amount of LQTY currently staked. */
   totalStakedLQTY: Decimal;
 
+  /** Airdrop amount available for the user. */
+  airdropClaimableLQTY: Decimal;
+
+  /** Airdrop claim status for the user. */
+  airdropHasClaimed: boolean;
+
   /** @internal */
   _riskiestTroveBeforeRedistribution: TroveWithPendingRedistribution;
 }
@@ -469,6 +475,20 @@ export abstract class LiquityStore<T = unknown> {
         "totalStakedLQTY",
         baseState.totalStakedLQTY,
         baseStateUpdate.totalStakedLQTY
+      ),
+
+      airdropClaimableLQTY: this._updateIfChanged(
+        eq,
+        "airdropClaimableLQTY",
+        baseState.airdropClaimableLQTY,
+        baseStateUpdate.airdropClaimableLQTY
+      ),
+
+      airdropHasClaimed: this._updateIfChanged(
+        strictEquals,
+        "airdropHasClaimed",
+        baseState.airdropHasClaimed,
+        baseStateUpdate.airdropHasClaimed
       ),
 
       _riskiestTroveBeforeRedistribution: this._silentlyUpdateIfChanged(

@@ -235,6 +235,16 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
     return this._readable.getUniTokenAllowance(address, overrides);
   }
 
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getAirdropClaimableLQTY} */
+  getAirdropClaimableLQTY(address?: string, overrides?: EthersCallOverrides): Promise<Decimal> {
+    return this._readable.getAirdropClaimableLQTY(address, overrides);
+  }
+
+  /** {@inheritDoc @liquity/lib-base#ReadableLiquity.getAirdropHasClaimed} */
+  getAirdropHasClaimed(address?: string, overrides?: EthersCallOverrides): Promise<boolean> {
+    return this._readable.getAirdropHasClaimed(address, overrides);
+  }
+
   /** @internal */
   _getRemainingLiquidityMiningLQTYRewardCalculator(
     overrides?: EthersCallOverrides
@@ -664,6 +674,17 @@ export class EthersLiquity implements ReadableEthersLiquity, TransactableLiquity
    */
   exitLiquidityMining(overrides?: EthersTransactionOverrides): Promise<void> {
     return this.send.exitLiquidityMining(overrides).then(waitForSuccess);
+  }
+
+  /**
+   * {@inheritDoc @liquity/lib-base#TransactableLiquity.claimAirdrop}
+   *
+   * @throws
+   * Throws {@link EthersTransactionFailedError} in case of transaction failure.
+   * Throws {@link EthersTransactionCancelledError} if the transaction is cancelled or replaced.
+   */
+  claimAirdrop(overrides?: EthersTransactionOverrides): Promise<void> {
+    return this.send.claimAirdrop(overrides).then(waitForSuccess);
   }
 }
 

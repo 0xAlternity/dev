@@ -350,7 +350,7 @@ export interface IERC20
 
 interface LockupContractFactoryCalls {
   NAME(_overrides?: CallOverrides): Promise<string>;
-  SECONDS_IN_ONE_YEAR(_overrides?: CallOverrides): Promise<BigNumber>;
+  deploymentTime(_overrides?: CallOverrides): Promise<BigNumber>;
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
   isRegisteredLockup(_contractAddress: string, _overrides?: CallOverrides): Promise<boolean>;
   lockupContractToDeployer(arg0: string, _overrides?: CallOverrides): Promise<string>;
@@ -359,7 +359,7 @@ interface LockupContractFactoryCalls {
 }
 
 interface LockupContractFactoryTransactions {
-  deployLockupContract(_beneficiary: string, _unlockTime: BigNumberish, _overrides?: Overrides): Promise<void>;
+  deployLockupContract(_beneficiary: string, _duration: BigNumberish, _overrides?: Overrides): Promise<void>;
   setLQTYTokenAddress(_lqtyTokenAddress: string, _overrides?: Overrides): Promise<void>;
 }
 
@@ -543,8 +543,10 @@ export interface MultiTroveGetter
 }
 
 interface PriceFeedCalls {
+  CNYUSD_TELLOR_REQ_ID(_overrides?: CallOverrides): Promise<string>;
+  CNY_TIMEOUT(_overrides?: CallOverrides): Promise<BigNumber>;
   DECIMAL_PRECISION(_overrides?: CallOverrides): Promise<BigNumber>;
-  ETHUSD_TELLOR_REQ_ID(_overrides?: CallOverrides): Promise<BigNumber>;
+  ETHUSD_TELLOR_REQ_ID(_overrides?: CallOverrides): Promise<string>;
   MAX_PRICE_DEVIATION_FROM_PREVIOUS_ROUND(_overrides?: CallOverrides): Promise<BigNumber>;
   MAX_PRICE_DIFFERENCE_BETWEEN_ORACLES(_overrides?: CallOverrides): Promise<BigNumber>;
   NAME(_overrides?: CallOverrides): Promise<string>;
@@ -554,14 +556,15 @@ interface PriceFeedCalls {
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
   lastGoodPrice(_overrides?: CallOverrides): Promise<BigNumber>;
   owner(_overrides?: CallOverrides): Promise<string>;
-  priceAggregator(_overrides?: CallOverrides): Promise<string>;
+  priceAggregatorCny(_overrides?: CallOverrides): Promise<string>;
+  priceAggregatorEth(_overrides?: CallOverrides): Promise<string>;
   status(_overrides?: CallOverrides): Promise<number>;
   tellorCaller(_overrides?: CallOverrides): Promise<string>;
 }
 
 interface PriceFeedTransactions {
   fetchPrice(_overrides?: Overrides): Promise<BigNumber>;
-  setAddresses(_priceAggregatorAddress: string, _tellorCallerAddress: string, _overrides?: Overrides): Promise<void>;
+  setAddresses(_priceAggregatorAddressEth: string, _priceAggregatorAddressCny: string, _tellorCallerAddress: string, _overrides?: Overrides): Promise<void>;
 }
 
 export interface PriceFeed
@@ -886,50 +889,30 @@ export interface TroveManager
   extractEvents(logs: Log[], name: "TroveUpdated"): _TypedLogDescription<{ _borrower: string; _debt: BigNumber; _coll: BigNumber; _stake: BigNumber; _operation: number }>[];
 }
 
-interface UnipoolCalls {
-  NAME(_overrides?: CallOverrides): Promise<string>;
-  balanceOf(account: string, _overrides?: CallOverrides): Promise<BigNumber>;
-  duration(_overrides?: CallOverrides): Promise<BigNumber>;
-  earned(account: string, _overrides?: CallOverrides): Promise<BigNumber>;
+interface MerkleDistributorCalls {
+  canClaim(account: string, amount: BigNumberish, _overrides?: CallOverrides): Promise<boolean>;
+  isClaimed(account: string, _overrides?: CallOverrides): Promise<boolean>;
   isOwner(_overrides?: CallOverrides): Promise<boolean>;
-  lastTimeRewardApplicable(_overrides?: CallOverrides): Promise<BigNumber>;
-  lastUpdateTime(_overrides?: CallOverrides): Promise<BigNumber>;
-  lqtyToken(_overrides?: CallOverrides): Promise<string>;
+  merkleRoot(_overrides?: CallOverrides): Promise<string>;
   owner(_overrides?: CallOverrides): Promise<string>;
-  periodFinish(_overrides?: CallOverrides): Promise<BigNumber>;
-  rewardPerToken(_overrides?: CallOverrides): Promise<BigNumber>;
-  rewardPerTokenStored(_overrides?: CallOverrides): Promise<BigNumber>;
-  rewardRate(_overrides?: CallOverrides): Promise<BigNumber>;
-  rewards(arg0: string, _overrides?: CallOverrides): Promise<BigNumber>;
-  totalSupply(_overrides?: CallOverrides): Promise<BigNumber>;
-  uniToken(_overrides?: CallOverrides): Promise<string>;
-  userRewardPerTokenPaid(arg0: string, _overrides?: CallOverrides): Promise<BigNumber>;
+  token(_overrides?: CallOverrides): Promise<string>;
 }
 
-interface UnipoolTransactions {
-  claimReward(_overrides?: Overrides): Promise<void>;
-  setParams(_lqtyTokenAddress: string, _uniTokenAddress: string, _duration: BigNumberish, _overrides?: Overrides): Promise<void>;
-  stake(amount: BigNumberish, _overrides?: Overrides): Promise<void>;
-  withdraw(amount: BigNumberish, _overrides?: Overrides): Promise<void>;
-  withdrawAndClaim(_overrides?: Overrides): Promise<void>;
+interface MerkleDistributorTransactions {
+  claim(account: string, amount: BigNumberish, proof: BytesLike[], _overrides?: Overrides): Promise<void>;
+  setParams(_lqtyTokenAddress: string, _merkleRoot: BytesLike, _overrides?: Overrides): Promise<void>;
 }
 
-export interface Unipool
-  extends _TypedLiquityContract<UnipoolCalls, UnipoolTransactions> {
+export interface MerkleDistributor
+  extends _TypedLiquityContract<MerkleDistributorCalls, MerkleDistributorTransactions> {
   readonly filters: {
-    LQTYTokenAddressChanged(_lqtyTokenAddress?: null): EventFilter;
+    Claim(account?: null, amount?: null): EventFilter;
+    LQTYTokenAddressSet(_lqtyTokenAddress?: null): EventFilter;
+    MerkleRootSet(_merkleRoot?: null): EventFilter;
     OwnershipTransferred(previousOwner?: string | null, newOwner?: string | null): EventFilter;
-    RewardAdded(reward?: null): EventFilter;
-    RewardPaid(user?: string | null, reward?: null): EventFilter;
-    Staked(user?: string | null, amount?: null): EventFilter;
-    UniTokenAddressChanged(_uniTokenAddress?: null): EventFilter;
-    Withdrawn(user?: string | null, amount?: null): EventFilter;
   };
-  extractEvents(logs: Log[], name: "LQTYTokenAddressChanged"): _TypedLogDescription<{ _lqtyTokenAddress: string }>[];
+  extractEvents(logs: Log[], name: "Claim"): _TypedLogDescription<{ account: string; amount: BigNumber }>[];
+  extractEvents(logs: Log[], name: "LQTYTokenAddressSet"): _TypedLogDescription<{ _lqtyTokenAddress: string }>[];
+  extractEvents(logs: Log[], name: "MerkleRootSet"): _TypedLogDescription<{ _merkleRoot: string }>[];
   extractEvents(logs: Log[], name: "OwnershipTransferred"): _TypedLogDescription<{ previousOwner: string; newOwner: string }>[];
-  extractEvents(logs: Log[], name: "RewardAdded"): _TypedLogDescription<{ reward: BigNumber }>[];
-  extractEvents(logs: Log[], name: "RewardPaid"): _TypedLogDescription<{ user: string; reward: BigNumber }>[];
-  extractEvents(logs: Log[], name: "Staked"): _TypedLogDescription<{ user: string; amount: BigNumber }>[];
-  extractEvents(logs: Log[], name: "UniTokenAddressChanged"): _TypedLogDescription<{ _uniTokenAddress: string }>[];
-  extractEvents(logs: Log[], name: "Withdrawn"): _TypedLogDescription<{ user: string; amount: BigNumber }>[];
 }
