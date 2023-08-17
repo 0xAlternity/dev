@@ -64,7 +64,12 @@ contract LockupContractFactory is ILockupContractFactory, Ownable, CheckContract
         _requireLQTYAddressIsSet(lqtyTokenAddress);
         uint256 unlockTime = deploymentTime.add(_duration);
 
-        LockupContract lockupContract = new LockupContract(_beneficiary, deploymentTime, _duration);
+        LockupContract lockupContract = new LockupContract(
+            msg.sender,
+            _beneficiary,
+            deploymentTime,
+            _duration
+        );
 
         lockupContractToDeployer[address(lockupContract)] = msg.sender;
         emit LockupContractDeployedThroughFactory(

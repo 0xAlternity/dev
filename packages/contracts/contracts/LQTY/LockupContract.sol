@@ -5,8 +5,9 @@ pragma solidity 0.6.11;
 import "../Dependencies/SafeMath.sol";
 import "../Dependencies/IERC20.sol";
 import "../Dependencies/SafeERC20.sol";
+import "../Dependencies/Ownable.sol";
 
-contract LockupContract {
+contract LockupContract is Ownable {
     using SafeMath for uint256;
     using SafeMath for uint64;
 
@@ -14,18 +15,20 @@ contract LockupContract {
     string public constant NAME = "LockupContract";
 
     mapping(address => uint256) private _released;
-    address private immutable _beneficiary;
+    address public _beneficiary;
     uint64 private immutable _start;
     uint64 private immutable _duration;
 
     // --- Events ---
 
-    event LockupContractCreated(address _beneficiary, uint256 _unlockTime);
-    event LockupContractReleased(address _token, uint256 _amount);
+    event LockupContractCreated(address indexed _beneficiary, uint256 indexed _unlockTime);
+    event LockupContractReleased(address indexed _token, uint256 indexed _amount);
+    event BeneficiaryUpdated(address indexed _beneficiary);
 
     // --- Functions ---
 
     constructor(
+        address ownerAddress,
         address beneficiaryAddress,
         uint64 startTimestamp,
         uint64 durationSeconds
@@ -35,6 +38,9 @@ contract LockupContract {
         _start = startTimestamp;
         _duration = durationSeconds;
         emit LockupContractCreated(beneficiaryAddress, startTimestamp.add(durationSeconds));
+        // transfer ownership to the deployer address
+        // transferring twice is not optimal, but I'm too lazy to update Ownable.sol
+        _transferOwnership(ownerAddress);
     }
 
     /**
@@ -113,5 +119,32 @@ contract LockupContract {
         } else {
             return (totalAllocation.mul(timestamp.sub(start()))).div(duration());
         }
+    }
+
+    // Owner functions
+
+    /**
+     * @dev Updates beneficiary to the new address
+     */
+    function updateBeneficiary(address beneficiaryAddress) external onlyOwner {
+        require(beneficiaryAddress != address(0), "LockupContract: beneficiary is zero address");
+        _beneficiary = beneficiaryAddress;
+        BeneficiaryUpdated(beneficiaryAddress);
+    }
+
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions anymore.
+     */
+    function renounceOwnership() external onlyOwner {
+        _renounceOwnership();
+    }
+
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) external onlyOwner {
+        _transferOwnership(newOwner);
     }
 }
