@@ -52,29 +52,42 @@ async function mainnetDeploy(configParams) {
   const fiftheenMonthFromDeployment = (Number(deploymentTime) + timeVals.SECONDS_IN_ONE_MONTH * 15).toString()
   console.log(`time fiftheenMonthFromDeployment: ${fiftheenMonthFromDeployment}`)
   const thirtyMonthFromDeployment = (Number(deploymentTime) + timeVals.SECONDS_IN_ONE_MONTH * 30).toString()
-  console.log(`time fiftheenMonthFromDeployment: ${thirtyMonthFromDeployment}`)
+  console.log(`time thirtyMonthFromDeployment: ${thirtyMonthFromDeployment}`)
 
   const lockupContracts = {}
   
-  //Community Reserve Lockup
-  lockupContracts["COMMUNITY_RESERVE"] = await mdh.deployLockupContract(
+  //LP Rewards Lockup, 20m
+  lockupContracts["LP_RESERVE"] = await mdh.deployLockupContract(
     LQTYContracts,
-    "COMMUNITY_RESERVE",
-    configParams.beneficiaries["COMMUNITY_RESERVE"],
+    "LP_RESERVE",
+    configParams.liquityAddrs.GENERAL_SAFE,
     deploymentTime.toString(),
     (timeVals.SECONDS_IN_ONE_MONTH * 15).toString(),
     deploymentState
   )
 
-  //Team Reserve Lockup
-  lockupContracts["TEAM_RESERVE"] = await mdh.deployLockupContract(
+  //Community Reserve Lockup, 10m
+  lockupContracts["COMMUNITY_RESERVE"] = await mdh.deployLockupContract(
     LQTYContracts,
-    "TEAM_RESERVE",
-    configParams.beneficiaries["TEAM_RESERVE"],
+    "COMMUNITY_RESERVE",
+    configParams.liquityAddrs.COMMUNITY_SAFE,
     deploymentTime.toString(),
-    (timeVals.SECONDS_IN_ONE_MONTH * 30).toString(),
+    (timeVals.SECONDS_IN_ONE_MONTH * 15).toString(),
     deploymentState
   )
+
+  //Team Reserve Lockup, 15m
+  for (const [beneficary, beneficaryAddress] of Object.entries(configParams.beneficiaries)) {
+    lockupContracts[beneficary] = await mdh.deployLockupContract(
+      LQTYContracts,
+      beneficary,
+      beneficaryAddress,
+      deploymentTime.toString(),
+      (timeVals.SECONDS_IN_ONE_MONTH * 30).toString(),
+      deploymentState
+    )
+  }
+
 
   // --- TESTS AND CHECKS  ---
   // Check price feed and oracles ---
@@ -121,7 +134,7 @@ async function mainnetDeploy(configParams) {
     const lockupContract = lockupContracts["COMMUNITY_RESERVE"]
     // Check contract has stored correct beneficary
     const onChainBeneficiary = await lockupContract.beneficiary()
-    assert.equal(configParams.beneficiaries["COMMUNITY_RESERVE"].toLowerCase(), onChainBeneficiary.toLowerCase())
+    assert.equal(configParams.liquityAddrs.COMMUNITY_SAFE.toLowerCase(), onChainBeneficiary.toLowerCase())
     // Check correct unlock time
     const unlockTime = await lockupContract.end()
     assert.equal(fiftheenMonthFromDeployment, unlockTime.toString())
@@ -129,7 +142,26 @@ async function mainnetDeploy(configParams) {
     console.log(
       `lockupContract addr: ${lockupContract.address},
             beneficiary: "COMMUNITY_RESERVE",
-            beneficiary addr: ${configParams.beneficiaries["COMMUNITY_RESERVE"]},
+            beneficiary addr: ${configParams.liquityAddrs.COMMUNITY_SAFE},
+            on-chain beneficiary addr: ${onChainBeneficiary},
+            unlockTime: ${unlockTime}
+            `
+    )
+  }
+
+  {
+    const lockupContract = lockupContracts["LP_RESERVE"]
+    // Check contract has stored correct beneficary
+    const onChainBeneficiary = await lockupContract.beneficiary()
+    assert.equal(configParams.liquityAddrs.GENERAL_SAFE.toLowerCase(), onChainBeneficiary.toLowerCase())
+    // Check correct unlock time
+    const unlockTime = await lockupContract.end()
+    assert.equal(fiftheenMonthFromDeployment, unlockTime.toString())
+
+    console.log(
+      `lockupContract addr: ${lockupContract.address},
+            beneficiary: "COMMUNITY_RESERVE",
+            beneficiary addr: ${configParams.liquityAddrs.GENERAL_SAFE},
             on-chain beneficiary addr: ${onChainBeneficiary},
             unlockTime: ${unlockTime}
             `
@@ -137,19 +169,19 @@ async function mainnetDeploy(configParams) {
   }
 
   //Team Reserve Lockup
-  {
-    const lockupContract = lockupContracts["TEAM_RESERVE"]
+  for (const [beneficary, beneficaryAddress] of Object.entries(configParams.beneficiaries)) {
+    const lockupContract = lockupContracts[beneficary]
     // Check contract has stored correct beneficary
     const onChainBeneficiary = await lockupContract.beneficiary()
-    assert.equal(configParams.beneficiaries["TEAM_RESERVE"].toLowerCase(), onChainBeneficiary.toLowerCase())
+    assert.equal(beneficaryAddress.toLowerCase(), onChainBeneficiary.toLowerCase())
     // Check correct unlock time
     const unlockTime = await lockupContract.end()
     assert.equal(thirtyMonthFromDeployment, unlockTime.toString())
 
     console.log(
       `lockupContract addr: ${lockupContract.address},
-            beneficiary: "TEAM_RESERVE",
-            beneficiary addr: ${configParams.beneficiaries["TEAM_RESERVE"]},
+            beneficiary: ${beneficary},
+            beneficiary addr: ${beneficaryAddress},
             on-chain beneficiary addr: ${onChainBeneficiary},
             unlockTime: ${unlockTime}
             `

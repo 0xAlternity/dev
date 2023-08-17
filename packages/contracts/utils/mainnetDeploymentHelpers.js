@@ -393,7 +393,7 @@ class MainnetDeploymentHelper {
   
     // verify
     if (this.configParams.ETHERSCAN_BASE_URL) {
-      await this.verifyContract(beneficiaryName, deploymentState, [beneficiaryAddress, deploymentTime, duration])
+      await this.verifyContract(beneficiaryName, deploymentState, [this.deployerWallet.address, beneficiaryAddress, deploymentTime, duration])
     }
     return contract
   }
