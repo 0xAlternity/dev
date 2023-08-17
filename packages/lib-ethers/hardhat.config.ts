@@ -89,8 +89,8 @@ const oracleAddresses: OracleNetworkConfig = {
 
 const merkleRoot: { [name: string]: string } = {
   hardhat: "0xd0aa6a4e5b4e13462921d7518eebdb7b297a7877d6cfe078b0c318827392fb55",
-  sepolia: "0x06adb08ff15350a67439b5c7bee129ee60c38c3c9be715599b9e1a308731b259",
-  mainnet: "" //TODO Update before mainnet deployment
+  sepolia: "0x8af3681f96bb109a6310baefb635252de69cd6b1e4be03fcdd8f5dfae6e3e154",
+  mainnet: "0x8af3681f96bb109a6310baefb635252de69cd6b1e4be03fcdd8f5dfae6e3e154"
 };
 
 const hasOracles = (network: string): boolean => network in oracleAddresses;
