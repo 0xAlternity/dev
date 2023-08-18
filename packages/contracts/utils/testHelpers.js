@@ -1074,7 +1074,7 @@ class TestHelper {
   // --- LQTY & Lockup Contract functions ---
 
   static getLCAddressFromDeploymentTx(deployedLCTx) {
-    return deployedLCTx.logs[0].args[0]
+    return deployedLCTx.logs[2].args[0]
   }
 
   static async getLCFromDeploymentTx(deployedLCTx) {

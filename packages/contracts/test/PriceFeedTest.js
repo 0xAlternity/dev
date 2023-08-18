@@ -237,7 +237,7 @@ contract("PriceFeed", async accounts => {
   });
 
   // --- Chainlink breaks ---
-  it("C1 Chainlink breaks, Tellor working: fetchPrice should return the correct Tellor price, taking into account Tellor's 6-digit granularity", async () => {
+  it("C1 Chainlink breaks, Tellor working: fetchPrice should return the correct Tellor price, taking into account Tellor's 18-digit granularity", async () => {
     await setAddresses();
     // --- Chainlink fails, system switches to Tellor ---
     const statusBefore = await priceFeed.status();
@@ -272,8 +272,8 @@ contract("PriceFeed", async accounts => {
 
     await priceFeed.fetchPrice();
     price = await priceFeed.lastGoodPrice();
-    // Check Liquity PriceFeed gives 22385.27672951 with 18 digit precision
-    assert.equal(price, "22385276729000000000000");
+    // Check Liquity PriceFeed gives 22385.276729519724575057 with 18 digit precision
+    assert.equal(price, "22385276729519724575057");
   });
 
   it("C1 chainlinkWorking: Chainlink broken by zero latest roundId, Tellor working: switch to usingChainlinkTellorUntrusted", async () => {

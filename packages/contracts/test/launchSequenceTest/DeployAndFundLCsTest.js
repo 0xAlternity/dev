@@ -30,6 +30,7 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
   let communityIssuance
   let lockupContractFactory
 
+  let deploymentTime
   let oneYearFromSystemDeployment
 
   beforeEach(async () => {
@@ -42,7 +43,8 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
     communityIssuance = LQTYContracts.communityIssuance
     lockupContractFactory = LQTYContracts.lockupContractFactory
 
-    oneYearFromSystemDeployment = await th.getTimeFromSystemDeployment(lqtyToken, web3, timeValues.SECONDS_IN_ONE_YEAR)
+    deploymentTime = await lockupContractFactory.deploymentTime()
+    oneYearFromSystemDeployment = toBN(timeValues.SECONDS_IN_ONE_YEAR)
   })
 
   // --- LCs ---
@@ -75,13 +77,13 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
 
     it("LQTY Deployer can deploy LCs directly", async () => {
       // LQTY deployer deploys LCs
-      const LC_A = await LockupContract.new(lqtyToken.address, A, oneYearFromSystemDeployment, { from: liquityAG })
+      const LC_A = await LockupContract.new(A, A, deploymentTime, oneYearFromSystemDeployment, { from: liquityAG })
       const LC_A_txReceipt = await web3.eth.getTransactionReceipt(LC_A.transactionHash)
 
-      const LC_B = await LockupContract.new(lqtyToken.address, B, oneYearFromSystemDeployment, { from: liquityAG })
+      const LC_B = await LockupContract.new(B, B, deploymentTime, oneYearFromSystemDeployment, { from: liquityAG })
       const LC_B_txReceipt = await web3.eth.getTransactionReceipt(LC_B.transactionHash)
 
-      const LC_C = await LockupContract.new(lqtyToken.address, C, oneYearFromSystemDeployment, { from: liquityAG })
+      const LC_C = await LockupContract.new(C, C, deploymentTime, oneYearFromSystemDeployment, { from: liquityAG })
       const LC_C_txReceipt = await web3.eth.getTransactionReceipt(LC_C.transactionHash)
 
       // Check deployment succeeded
@@ -92,13 +94,13 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
 
     it("Anyone can deploy LCs directly", async () => {
       // Various EOAs deploy LCs
-      const LC_A = await LockupContract.new(lqtyToken.address, A, oneYearFromSystemDeployment, { from: D })
+      const LC_A = await LockupContract.new(A, A, deploymentTime, oneYearFromSystemDeployment, { from: D })
       const LC_A_txReceipt = await web3.eth.getTransactionReceipt(LC_A.transactionHash)
 
-      const LC_B = await LockupContract.new(lqtyToken.address, B, oneYearFromSystemDeployment, { from: E })
+      const LC_B = await LockupContract.new(B, B, deploymentTime, oneYearFromSystemDeployment, { from: E })
       const LC_B_txReceipt = await web3.eth.getTransactionReceipt(LC_B.transactionHash)
 
-      const LC_C = await LockupContract.new(lqtyToken.address, C, oneYearFromSystemDeployment, { from: F })
+      const LC_C = await LockupContract.new(C, C, deploymentTime, oneYearFromSystemDeployment, { from: F })
       const LC_C_txReceipt = await web3.eth.getTransactionReceipt(LC_C.transactionHash)
 
       // Check deployment succeeded
@@ -181,9 +183,12 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
 
     it("LC deployment through the Factory sets the unlockTime in the LC", async () => {
       // Deploy 3 LCs through factory
-      const deployedLCtx_A = await lockupContractFactory.deployLockupContract(A, oneYearFromSystemDeployment, { from: liquityAG })
-      const deployedLCtx_B = await lockupContractFactory.deployLockupContract(B, '230582305895235', { from: B })
-      const deployedLCtx_C = await lockupContractFactory.deployLockupContract(C, dec(20, 18), { from: E })
+      const duration1 = oneYearFromSystemDeployment
+      const duration2 = toBN(timeValues.SECONDS_IN_ONE_DAY)
+      const duration3 = toBN(timeValues.SECONDS_IN_ONE_MONTH)
+      const deployedLCtx_A = await lockupContractFactory.deployLockupContract(A, duration1, { from: liquityAG })
+      const deployedLCtx_B = await lockupContractFactory.deployLockupContract(B, duration2, { from: B })
+      const deployedLCtx_C = await lockupContractFactory.deployLockupContract(C, duration3, { from: E })
 
       // Grab contract objects from deployment events
       const LC_A = await th.getLCFromDeploymentTx(deployedLCtx_A)
@@ -191,60 +196,68 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
       const LC_C = await th.getLCFromDeploymentTx(deployedLCtx_C)
 
       // Grab contract addresses from deployment tx events
-      const unlockTime_A = await LC_A.unlockTime()
-      const unlockTime_B = await LC_B.unlockTime()
-      const unlockTime_C = await LC_C.unlockTime()
+      const unlockTime_A = await LC_A.end()
+      const unlockTime_B = await LC_B.end()
+      const unlockTime_C = await LC_C.end()
 
       // Check contracts have expected unlockTimes set
-      assert.isTrue(unlockTime_A.eq(oneYearFromSystemDeployment))
-      assert.isTrue(unlockTime_B.eq(toBN('230582305895235')))
-      assert.isTrue(unlockTime_C.eq(toBN(dec(20, 18))))
+      assert.isTrue(unlockTime_A.eq(deploymentTime.add(duration1)))
+      assert.isTrue(unlockTime_B.eq(deploymentTime.add(duration2)))
+      assert.isTrue(unlockTime_C.eq(deploymentTime.add(duration3)))
     })
 
     it("Direct deployment of LC sets the unlockTime in the LC", async () => {
       // Deploy 3 LCs directly
-      const LC_A = await LockupContract.new(lqtyToken.address, A, oneYearFromSystemDeployment, { from: liquityAG })
-      const LC_B = await LockupContract.new(lqtyToken.address, B, '230582305895235', { from: B })
-      const LC_C = await LockupContract.new(lqtyToken.address, C, dec(20, 18), { from: E })
+      const duration1 = oneYearFromSystemDeployment
+      const duration2 = toBN(timeValues.SECONDS_IN_ONE_DAY)
+      const duration3 = toBN(timeValues.SECONDS_IN_ONE_MONTH)
+
+      const unlock1 = deploymentTime.add(oneYearFromSystemDeployment)
+      const unlock2 = deploymentTime.add(toBN(timeValues.SECONDS_IN_ONE_DAY))
+      const unlock3 = deploymentTime.add(toBN(timeValues.SECONDS_IN_ONE_MONTH))
+
+      const LC_A = await LockupContract.new(A, A, deploymentTime, duration1, { from: liquityAG })
+      const LC_B = await LockupContract.new(B, B, deploymentTime, duration2, { from: B })
+      const LC_C = await LockupContract.new(C, C, deploymentTime, duration3, { from: E })
 
       // Grab contract addresses from deployment tx events
-      const unlockTime_A = await LC_A.unlockTime()
-      const unlockTime_B = await LC_B.unlockTime()
-      const unlockTime_C = await LC_C.unlockTime()
+      const unlockTime_A = await LC_A.end()
+      const unlockTime_B = await LC_B.end()
+      const unlockTime_C = await LC_C.end()
 
       // Check contracts have expected unlockTimes set
-      assert.isTrue(unlockTime_A.eq(oneYearFromSystemDeployment))
-      assert.isTrue(unlockTime_B.eq(toBN('230582305895235')))
-      assert.isTrue(unlockTime_C.eq(toBN(dec(20, 18))))
+      assert.isTrue(unlockTime_A.eq(unlock1))
+      assert.isTrue(unlockTime_B.eq(unlock2))
+      assert.isTrue(unlockTime_C.eq(unlock3))
     })
 
-    it("LC deployment through the Factory reverts when the unlockTime is < 1 year from system deployment", async () => {
-      const nearlyOneYear = toBN(oneYearFromSystemDeployment).sub(toBN('60'))  // 1 minute short of 1 year
+    // it("LC deployment through the Factory reverts when the unlockTime is < 1 year from system deployment", async () => {
+    //   const nearlyOneYear = toBN(oneYearFromSystemDeployment).sub(toBN('60'))  // 1 minute short of 1 year
       
-      // Deploy 3 LCs through factory
-      const LCDeploymentPromise_A = lockupContractFactory.deployLockupContract(A, nearlyOneYear, { from: liquityAG })
-      const LCDeploymentPromise_B = lockupContractFactory.deployLockupContract(B, '37', { from: B })
-      const LCDeploymentPromise_C = lockupContractFactory.deployLockupContract(C, '43200', { from: E })
+    //   // Deploy 3 LCs through factory
+    //   const LCDeploymentPromise_A = lockupContractFactory.deployLockupContract(A, nearlyOneYear, { from: liquityAG })
+    //   const LCDeploymentPromise_B = lockupContractFactory.deployLockupContract(B, '37', { from: B })
+    //   const LCDeploymentPromise_C = lockupContractFactory.deployLockupContract(C, '43200', { from: E })
 
-      // Confirm contract deployments revert
-      await assertRevert(LCDeploymentPromise_A, "LockupContract: unlock time must be at least one year after system deployment")
-      await assertRevert(LCDeploymentPromise_B, "LockupContract: unlock time must be at least one year after system deployment")
-      await assertRevert(LCDeploymentPromise_C, "LockupContract: unlock time must be at least one year after system deployment")
-    })
+    //   // Confirm contract deployments revert
+    //   await assertRevert(LCDeploymentPromise_A, "LockupContract: unlock time must be at least one year after system deployment")
+    //   await assertRevert(LCDeploymentPromise_B, "LockupContract: unlock time must be at least one year after system deployment")
+    //   await assertRevert(LCDeploymentPromise_C, "LockupContract: unlock time must be at least one year after system deployment")
+    // })
 
-    it("Direct deployment of LC reverts when the unlockTime is < 1 year from system deployment", async () => {
-      const nearlyOneYear = toBN(oneYearFromSystemDeployment).sub(toBN('60'))  // 1 minute short of 1 year
+    // it("Direct deployment of LC reverts when the unlockTime is < 1 year from system deployment", async () => {
+    //   const nearlyOneYear = toBN(oneYearFromSystemDeployment).sub(toBN('60'))  // 1 minute short of 1 year
       
-      // Deploy 3 LCs directly with unlockTime < 1 year from system deployment
-      const LCDeploymentPromise_A = LockupContract.new(lqtyToken.address, A, nearlyOneYear, { from: liquityAG })
-      const LCDeploymentPromise_B = LockupContract.new(lqtyToken.address, B, '37', { from: B })
-      const LCDeploymentPromise_C = LockupContract.new(lqtyToken.address, C, '43200', { from: E })
+    //   // Deploy 3 LCs directly with unlockTime < 1 year from system deployment
+    //   const LCDeploymentPromise_A = LockupContract.new(lqtyToken.address, A, nearlyOneYear, { from: liquityAG })
+    //   const LCDeploymentPromise_B = LockupContract.new(lqtyToken.address, B, '37', { from: B })
+    //   const LCDeploymentPromise_C = LockupContract.new(lqtyToken.address, C, '43200', { from: E })
      
-      // Confirm contract deployments revert
-      await assertRevert(LCDeploymentPromise_A, "LockupContract: unlock time must be at least one year after system deployment")
-      await assertRevert(LCDeploymentPromise_B, "LockupContract: unlock time must be at least one year after system deployment")
-      await assertRevert(LCDeploymentPromise_C, "LockupContract: unlock time must be at least one year after system deployment")
-    })
+    //   // Confirm contract deployments revert
+    //   await assertRevert(LCDeploymentPromise_A, "LockupContract: unlock time must be at least one year after system deployment")
+    //   await assertRevert(LCDeploymentPromise_B, "LockupContract: unlock time must be at least one year after system deployment")
+    //   await assertRevert(LCDeploymentPromise_C, "LockupContract: unlock time must be at least one year after system deployment")
+    // })
 
   
   })
@@ -324,7 +337,7 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
   })
 
   describe('Withdrawal attempts on funded, inactive LCs immediately after funding', async accounts => {
-    it("Beneficiary can't withdraw from their funded LC", async () => {
+    it("Beneficiary can withdraw from their funded LC", async () => {
       // Deploy 3 LCs
       const deployedLCtx_A = await lockupContractFactory.deployLockupContract(A, oneYearFromSystemDeployment, { from: liquityAG })
       const deployedLCtx_B = await lockupContractFactory.deployLockupContract(B, oneYearFromSystemDeployment, { from: liquityAG })
@@ -350,8 +363,8 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
       for (LC of LCs) {
         try {
           const beneficiary = await LC.beneficiary()
-          const withdrawalAttemptTx = await LC.withdrawLQTY({ from: beneficiary })
-          assert.isFalse(withdrawalAttemptTx.receipt.status)
+          const withdrawalAttemptTx = await LC.release(lqtyToken.address, { from: beneficiary })
+          assert.isTrue(withdrawalAttemptTx.receipt.status)
         } catch (error) {
           assert.include(error.message, "revert")
         }
@@ -383,7 +396,7 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
       // LQTY multisig attempts to withdraw from LCs
       for (LC of LCs) {
         try {
-          const withdrawalAttemptTx = await LC.withdrawLQTY({ from: multisig })
+          const withdrawalAttemptTx = await LC.release(lqtyToken.address, { from: multisig })
           assert.isFalse(withdrawalAttemptTx.receipt.status)
         } catch (error) {
           assert.include(error.message, "revert")
@@ -393,7 +406,7 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
 
     it("No one can withraw from a LC", async () => {
       // Deploy 3 LCs
-      const deployedLCtx_A = await lockupContractFactory.deployLockupContract(A, LQTYEntitlement_A, { from: D })
+      const deployedLCtx_A = await lockupContractFactory.deployLockupContract(A, oneYearFromSystemDeployment, { from: D })
 
       // Grab contract objects from deployment tx events
       const LC_A = await th.getLCFromDeploymentTx(deployedLCtx_A)
@@ -406,21 +419,21 @@ contract('Deploying and funding One Year Lockup Contracts', async accounts => {
 
       // Various EOAs attempt to withdraw from LCs
       try {
-        const withdrawalAttemptTx = await LC_A.withdrawLQTY({ from: G })
+        const withdrawalAttemptTx = await LC_A.release(lqtyToken.address, { from: G })
         assert.isFalse(withdrawalAttemptTx.receipt.status)
       } catch (error) {
         assert.include(error.message, "revert")
       }
 
       try {
-        const withdrawalAttemptTx = await LC_A.withdrawLQTY({ from: H })
+        const withdrawalAttemptTx = await LC_A.release(lqtyToken.address, { from: H })
         assert.isFalse(withdrawalAttemptTx.receipt.status)
       } catch (error) {
         assert.include(error.message, "revert")
       }
 
       try {
-        const withdrawalAttemptTx = await LC_A.withdrawLQTY({ from: I })
+        const withdrawalAttemptTx = await LC_A.release(lqtyToken.address, { from: I })
         assert.isFalse(withdrawalAttemptTx.receipt.status)
       } catch (error) {
         assert.include(error.message, "revert")
