@@ -314,7 +314,7 @@ class MainnetDeploymentHelper {
   async connectLQTYContractsMainnet(LQTYContracts, merkleRoot) {
     const gasPrice = this.configParams.GAS_PRICE
     // Set LQTYToken address in LCF
-    await this.isOwnershipRenounced(LQTYContracts.lqtyStaking) ||
+    await this.isOwnershipRenounced(LQTYContracts.lockupContractFactory) ||
       await this.sendAndWaitForTransaction(LQTYContracts.lockupContractFactory.setLQTYTokenAddress(
         LQTYContracts.lqtyToken.address, 
         {gasPrice}
