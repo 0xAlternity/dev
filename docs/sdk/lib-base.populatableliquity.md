@@ -26,6 +26,7 @@ Implemented by [PopulatableEthersLiquity](./lib-ethers.populatableethersliquity.
 |  [adjustTrove(params, maxBorrowingRate)](./lib-base.populatableliquity.adjusttrove.md) | Adjust existing Trove by changing its collateral, debt, or both. |
 |  [approveUniTokens(allowance)](./lib-base.populatableliquity.approveunitokens.md) | Allow the liquidity mining contract to use Uniswap ETH/LUSD LP tokens for [staking](./lib-base.transactableliquity.stakeunitokens.md)<!-- -->. |
 |  [borrowLUSD(amount, maxBorrowingRate)](./lib-base.populatableliquity.borrowlusd.md) | Adjust existing Trove by borrowing more LUSD. |
+|  [claimAirdrop()](./lib-base.populatableliquity.claimairdrop.md) | Claim airdrop rewards. |
 |  [claimCollateralSurplus()](./lib-base.populatableliquity.claimcollateralsurplus.md) | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove()](./lib-base.populatableliquity.closetrove.md) | Close existing Trove by repaying all debt and withdrawing all collateral. |
 |  [depositCollateral(amount)](./lib-base.populatableliquity.depositcollateral.md) | Adjust existing Trove by depositing more collateral. |

@@ -44,6 +44,4 @@
 |  [EthersSigner](./lib-ethers.etherssigner.md) | Alias of Ethers' abstract [Signer](https://docs.ethers.io/v5/api/signer/) type. |
 |  [EthersTransactionReceipt](./lib-ethers.etherstransactionreceipt.md) | Alias of Ethers' [TransactionReceipt](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionReceipt) type. |
 |  [EthersTransactionResponse](./lib-ethers.etherstransactionresponse.md) | Alias of Ethers' [TransactionResponse](https://docs.ethers.io/v5/api/providers/types/#providers-TransactionResponse) type. |
-|  [OracleConfig](./lib-ethers.oracleconfig.md) |  |
-|  [OracleNetworkConfig](./lib-ethers.oraclenetworkconfig.md) |  |
 

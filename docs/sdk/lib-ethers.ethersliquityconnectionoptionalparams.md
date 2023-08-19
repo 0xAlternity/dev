@@ -16,6 +16,7 @@ export interface EthersLiquityConnectionOptionalParams
 
 |  Property | Type | Description |
 |  --- | --- | --- |
+|  [airdropRecipients?](./lib-ethers.ethersliquityconnectionoptionalparams.airdroprecipients.md) | Record&lt;string, string&gt; | <i>(Optional)</i> A mapping of airdrop addrees to amount. |
 |  [frontendTag?](./lib-ethers.ethersliquityconnectionoptionalparams.frontendtag.md) | string | <i>(Optional)</i> Address that will receive LQTY rewards from newly created Stability Deposits by default. |
 |  [userAddress?](./lib-ethers.ethersliquityconnectionoptionalparams.useraddress.md) | string | <i>(Optional)</i> Address whose Trove, Stability Deposit, LQTY Stake and balances will be read by default. |
 |  [useStore?](./lib-ethers.ethersliquityconnectionoptionalparams.usestore.md) | [EthersLiquityStoreOption](./lib-ethers.ethersliquitystoreoption.md) | <i>(Optional)</i> Create a [LiquityStore](./lib-base.liquitystore.md) and expose it as the <code>store</code> property. |

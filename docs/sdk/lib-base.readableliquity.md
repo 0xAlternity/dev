@@ -20,6 +20,8 @@ Implemented by [EthersLiquity](./lib-ethers.ethersliquity.md)<!-- -->.
 
 |  Method | Description |
 |  --- | --- |
+|  [getAirdropClaimableLQTY(address)](./lib-base.readableliquity.getairdropclaimablelqty.md) | Get the total amount of claimable LQTY rewards. |
+|  [getAirdropHasClaimed(address)](./lib-base.readableliquity.getairdrophasclaimed.md) | Get the status of airdrop claim. |
 |  [getCollateralSurplusBalance(address)](./lib-base.readableliquity.getcollateralsurplusbalance.md) | Get the amount of leftover collateral available for withdrawal by an address. |
 |  [getFees()](./lib-base.readableliquity.getfees.md) | Get a calculator for current fees. |
 |  [getFrontendStatus(address)](./lib-base.readableliquity.getfrontendstatus.md) | Check whether an address is registered as a Liquity frontend, and what its kickback rate is. |
