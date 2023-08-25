@@ -51,9 +51,10 @@ import {
 } from "./EthersLiquityConnection";
 
 import { decimalify, promiseAllValues } from "./_utils";
-import { _priceFeedIsTestnet, _uniTokenIsMock } from "./contracts";
+import { _priceFeedIsTestnet } from "./contracts";
 import { logsToString } from "./parseLogs";
 import { ReadableEthersLiquity } from "./ReadableEthersLiquity";
+import { _getAmountAndProofs } from "./_Airdrop";
 
 const bigNumberMax = (a: BigNumber, b?: BigNumber) => (b?.gt(a) ? b : a);
 
@@ -67,14 +68,19 @@ const defaultBorrowingFeeDecayToleranceMinutes = 10;
 
 const noDetails = () => undefined;
 
-const compose = <T, U, V>(f: (_: U) => V, g: (_: T) => U) => (_: T) => f(g(_));
+const compose =
+  <T, U, V>(f: (_: U) => V, g: (_: T) => U) =>
+  (_: T) =>
+    f(g(_));
 
 const id = <T>(t: T) => t;
 
 // Takes ~6-7K (use 10K to be safe) to update lastFeeOperationTime, but the cost of calculating the
 // decayed baseRate increases logarithmically with time elapsed since the last update.
-const addGasForBaseRateUpdate = (maxMinutesSinceLastUpdate = 10) => (gas: BigNumber) =>
-  gas.add(10000 + 1414 * Math.ceil(Math.log2(maxMinutesSinceLastUpdate + 1)));
+const addGasForBaseRateUpdate =
+  (maxMinutesSinceLastUpdate = 10) =>
+  (gas: BigNumber) =>
+    gas.add(10000 + 1414 * Math.ceil(Math.log2(maxMinutesSinceLastUpdate + 1)));
 
 // First traversal in ascending direction takes ~50K, then ~13.5K per extra step.
 // 80K should be enough for 3 steps, plus some extra to be safe.
@@ -197,7 +203,8 @@ export class EthersTransactionCancelledError extends Error {
  */
 export class SentEthersLiquityTransaction<T = unknown>
   implements
-    SentLiquityTransaction<EthersTransactionResponse, LiquityReceipt<EthersTransactionReceipt, T>> {
+    SentLiquityTransaction<EthersTransactionResponse, LiquityReceipt<EthersTransactionReceipt, T>>
+{
   /** Ethers' representation of a sent transaction. */
   readonly rawSentTransaction: EthersTransactionResponse;
 
@@ -345,7 +352,8 @@ const normalizeBorrowingOperationOptionalParams = (
  */
 export class PopulatedEthersLiquityTransaction<T = unknown>
   implements
-    PopulatedLiquityTransaction<EthersPopulatedTransaction, SentEthersLiquityTransaction<T>> {
+    PopulatedLiquityTransaction<EthersPopulatedTransaction, SentEthersLiquityTransaction<T>>
+{
   /** Unsigned transaction object populated by Ethers. */
   readonly rawPopulatedTransaction: EthersPopulatedTransaction;
 
@@ -406,7 +414,8 @@ export class PopulatedEthersRedemption
       EthersPopulatedTransaction,
       EthersTransactionResponse,
       EthersTransactionReceipt
-    > {
+    >
+{
   /** {@inheritDoc @liquity/lib-base#PopulatedRedemption.attemptedLUSDAmount} */
   readonly attemptedLUSDAmount: Decimal;
 
@@ -486,7 +495,8 @@ export class PopulatableEthersLiquity
       EthersTransactionReceipt,
       EthersTransactionResponse,
       EthersPopulatedTransaction
-    > {
+    >
+{
   private readonly _readable: ReadableEthersLiquity;
 
   constructor(readable: ReadableEthersLiquity) {
@@ -784,21 +794,16 @@ export class PopulatableEthersLiquity
     const { hintHelpers } = _getContracts(this._readable.connection);
     const price = await this._readable.getPrice();
 
-    const {
-      firstRedemptionHint,
-      partialRedemptionHintNICR,
-      truncatedLUSDamount
-    } = await hintHelpers.getRedemptionHints(amount.hex, price.hex, _redeemMaxIterations);
+    const { firstRedemptionHint, partialRedemptionHintNICR, truncatedLUSDamount } =
+      await hintHelpers.getRedemptionHints(amount.hex, price.hex, _redeemMaxIterations);
 
-    const [
-      partialRedemptionUpperHint,
-      partialRedemptionLowerHint
-    ] = partialRedemptionHintNICR.isZero()
-      ? [AddressZero, AddressZero]
-      : await this._findHintsForNominalCollateralRatio(
-          decimalify(partialRedemptionHintNICR)
-          // XXX: if we knew the partially redeemed Trove's address, we'd pass it here
-        );
+    const [partialRedemptionUpperHint, partialRedemptionLowerHint] =
+      partialRedemptionHintNICR.isZero()
+        ? [AddressZero, AddressZero]
+        : await this._findHintsForNominalCollateralRatio(
+            decimalify(partialRedemptionHintNICR)
+            // XXX: if we knew the partially redeemed Trove's address, we'd pass it here
+          );
 
     return [
       decimalify(truncatedLUSDamount),
@@ -836,13 +841,11 @@ export class PopulatableEthersLiquity
     const newTrove = Trove.create(normalizedParams, currentBorrowingRate);
     const hints = await this._findHints(newTrove);
 
-    const {
-      maxBorrowingRate,
-      borrowingFeeDecayToleranceMinutes
-    } = normalizeBorrowingOperationOptionalParams(
-      maxBorrowingRateOrOptionalParams,
-      currentBorrowingRate
-    );
+    const { maxBorrowingRate, borrowingFeeDecayToleranceMinutes } =
+      normalizeBorrowingOperationOptionalParams(
+        maxBorrowingRateOrOptionalParams,
+        currentBorrowingRate
+      );
 
     const txParams = (borrowLUSD: Decimal): Parameters<typeof borrowerOperations.openTrove> => [
       maxBorrowingRate.hex,
@@ -967,13 +970,11 @@ export class PopulatableEthersLiquity
     const adjustedTrove = trove.adjust(normalizedParams, currentBorrowingRate);
     const hints = await this._findHints(adjustedTrove, address);
 
-    const {
-      maxBorrowingRate,
-      borrowingFeeDecayToleranceMinutes
-    } = normalizeBorrowingOperationOptionalParams(
-      maxBorrowingRateOrOptionalParams,
-      currentBorrowingRate
-    );
+    const { maxBorrowingRate, borrowingFeeDecayToleranceMinutes } =
+      normalizeBorrowingOperationOptionalParams(
+        maxBorrowingRateOrOptionalParams,
+        currentBorrowingRate
+      );
 
     const txParams = (borrowLUSD?: Decimal): Parameters<typeof borrowerOperations.adjustTrove> => [
       maxBorrowingRate.hex,
@@ -1212,15 +1213,13 @@ export class PopulatableEthersLiquity
     const { troveManager } = _getContracts(this._readable.connection);
     const attemptedLUSDAmount = Decimal.from(amount);
 
-    const [
-      fees,
-      total,
-      [truncatedAmount, firstRedemptionHint, ...partialHints]
-    ] = await Promise.all([
-      this._readable.getFees(),
-      this._readable.getTotal(),
-      this._findRedemptionHints(attemptedLUSDAmount)
-    ]);
+    const [fees, total, [truncatedAmount, firstRedemptionHint, ...partialHints]] = await Promise.all(
+      [
+        this._readable.getFees(),
+        this._readable.getTotal(),
+        this._findRedemptionHints(attemptedLUSDAmount)
+      ]
+    );
 
     if (truncatedAmount.isZero) {
       throw new Error(
@@ -1326,21 +1325,20 @@ export class PopulatableEthersLiquity
     address?: string,
     overrides?: EthersTransactionOverrides
   ): Promise<PopulatedEthersLiquityTransaction<void>> {
-    address ??= _requireAddress(this._readable.connection, overrides);
-    const { uniToken } = _getContracts(this._readable.connection);
-
-    if (!_uniTokenIsMock(uniToken)) {
-      throw new Error("_mintUniToken() unavailable on this deployment of Liquity");
-    }
-
-    return this._wrapSimpleTransaction(
-      await uniToken.estimateAndPopulate.mint(
-        { ...overrides },
-        id,
-        address,
-        Decimal.from(amount).hex
-      )
-    );
+    throw new Error("Method not implemented.");
+    // address ??= _requireAddress(this._readable.connection, overrides);
+    // const { uniToken } = _getContracts(this._readable.connection);
+    // if (!_uniTokenIsMock(uniToken)) {
+    //   throw new Error("_mintUniToken() unavailable on this deployment of Liquity");
+    // }
+    // return this._wrapSimpleTransaction(
+    //   await uniToken.estimateAndPopulate.mint(
+    //     { ...overrides },
+    //     id,
+    //     address,
+    //     Decimal.from(amount).hex
+    //   )
+    // );
   }
 
   /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.approveUniTokens} */
@@ -1348,16 +1346,17 @@ export class PopulatableEthersLiquity
     allowance?: Decimalish,
     overrides?: EthersTransactionOverrides
   ): Promise<PopulatedEthersLiquityTransaction<void>> {
-    const { uniToken, unipool } = _getContracts(this._readable.connection);
+    throw new Error("Method not implemented.");
+    // const { uniToken, unipool } = _getContracts(this._readable.connection);
 
-    return this._wrapSimpleTransaction(
-      await uniToken.estimateAndPopulate.approve(
-        { ...overrides },
-        id,
-        unipool.address,
-        Decimal.from(allowance ?? Decimal.INFINITY).hex
-      )
-    );
+    // return this._wrapSimpleTransaction(
+    //   await uniToken.estimateAndPopulate.approve(
+    //     { ...overrides },
+    //     id,
+    //     unipool.address,
+    //     Decimal.from(allowance ?? Decimal.INFINITY).hex
+    //   )
+    // );
   }
 
   /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.stakeUniTokens} */
@@ -1365,15 +1364,16 @@ export class PopulatableEthersLiquity
     amount: Decimalish,
     overrides?: EthersTransactionOverrides
   ): Promise<PopulatedEthersLiquityTransaction<void>> {
-    const { unipool } = _getContracts(this._readable.connection);
+    throw new Error("Method not implemented.");
+    // const { unipool } = _getContracts(this._readable.connection);
 
-    return this._wrapSimpleTransaction(
-      await unipool.estimateAndPopulate.stake(
-        { ...overrides },
-        addGasForUnipoolRewardUpdate,
-        Decimal.from(amount).hex
-      )
-    );
+    // return this._wrapSimpleTransaction(
+    //   await unipool.estimateAndPopulate.stake(
+    //     { ...overrides },
+    //     addGasForUnipoolRewardUpdate,
+    //     Decimal.from(amount).hex
+    //   )
+    // );
   }
 
   /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.unstakeUniTokens} */
@@ -1381,38 +1381,66 @@ export class PopulatableEthersLiquity
     amount: Decimalish,
     overrides?: EthersTransactionOverrides
   ): Promise<PopulatedEthersLiquityTransaction<void>> {
-    const { unipool } = _getContracts(this._readable.connection);
+    throw new Error("Method not implemented.");
+    // const { unipool } = _getContracts(this._readable.connection);
 
-    return this._wrapSimpleTransaction(
-      await unipool.estimateAndPopulate.withdraw(
-        { ...overrides },
-        addGasForUnipoolRewardUpdate,
-        Decimal.from(amount).hex
-      )
-    );
+    // return this._wrapSimpleTransaction(
+    //   await unipool.estimateAndPopulate.withdraw(
+    //     { ...overrides },
+    //     addGasForUnipoolRewardUpdate,
+    //     Decimal.from(amount).hex
+    //   )
+    // );
   }
 
   /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.withdrawLQTYRewardFromLiquidityMining} */
   async withdrawLQTYRewardFromLiquidityMining(
     overrides?: EthersTransactionOverrides
   ): Promise<PopulatedEthersLiquityTransaction<void>> {
-    const { unipool } = _getContracts(this._readable.connection);
+    throw new Error("Method not implemented.");
+    // const { unipool } = _getContracts(this._readable.connection);
 
-    return this._wrapSimpleTransaction(
-      await unipool.estimateAndPopulate.claimReward({ ...overrides }, addGasForUnipoolRewardUpdate)
-    );
+    // return this._wrapSimpleTransaction(
+    //   await unipool.estimateAndPopulate.claimReward({ ...overrides }, addGasForUnipoolRewardUpdate)
+    // );
   }
 
   /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.exitLiquidityMining} */
   async exitLiquidityMining(
     overrides?: EthersTransactionOverrides
   ): Promise<PopulatedEthersLiquityTransaction<void>> {
-    const { unipool } = _getContracts(this._readable.connection);
+    throw new Error("Method not implemented.");
+    // const { unipool } = _getContracts(this._readable.connection);
+
+    // return this._wrapSimpleTransaction(
+    //   await unipool.estimateAndPopulate.withdrawAndClaim(
+    //     { ...overrides },
+    //     addGasForUnipoolRewardUpdate
+    //   )
+    // );
+  }
+
+  /** {@inheritDoc @liquity/lib-base#PopulatableLiquity.claimAirdrop} */
+  async claimAirdrop(
+    overrides?: EthersTransactionOverrides
+  ): Promise<PopulatedEthersLiquityTransaction<void>> {
+    const account = _requireAddress(this._readable.connection, overrides);
+    const { airdropRecipients } = this._readable.connection;
+
+    if (!airdropRecipients) {
+      throw new Error("Airdrop is not defined for this network.");
+    }
+    const { amount, proofs } = _getAmountAndProofs(airdropRecipients, account);
+
+    const { merkleDistributor } = _getContracts(this._readable.connection);
 
     return this._wrapSimpleTransaction(
-      await unipool.estimateAndPopulate.withdrawAndClaim(
+      await merkleDistributor.estimateAndPopulate.claim(
         { ...overrides },
-        addGasForUnipoolRewardUpdate
+        id,
+        account,
+        amount,
+        proofs
       )
     );
   }

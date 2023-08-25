@@ -29,7 +29,9 @@ const Balances: React.FC = () => {
 
 const GitHubCommit: React.FC<{ children?: string }> = ({ children }) =>
   children?.match(/[0-9a-f]{40}/) ? (
-    <Link href={`https://github.com/liquity/dev/commit/${children}`}>{children.substr(0, 7)}</Link>
+    <Link href={`https://github.com/AlternityF/dev/commit/${children}`}>
+      {children.substr(0, 7)}
+    </Link>
   ) : (
     <>unknown</>
   );
@@ -86,7 +88,7 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
     <Card {...{ variant }}>
       {showBalances && <Balances />}
 
-      <Heading>Liquity statistics</Heading>
+      <Heading>Statistics</Heading>
 
       <Heading as="h2" sx={{ mt: 3, fontWeight: "body" }}>
         Protocol
@@ -111,22 +113,25 @@ export const SystemStats: React.FC<SystemStatsProps> = ({ variant = "info", show
       <Statistic name="Troves" tooltip="The total number of active Troves in the system.">
         {Decimal.from(numberOfTroves).prettify(0)}
       </Statistic>
-      <Statistic name="LUSD supply" tooltip="The total LUSD minted by the Liquity Protocol.">
+      <Statistic
+        name={`${COIN} supply`}
+        tooltip={`The total ${COIN} minted by the Alternity Protocol.`}
+      >
         {total.debt.shorten()}
       </Statistic>
       {lusdInStabilityPoolPct && (
         <Statistic
-          name="LUSD in Stability Pool"
-          tooltip="The total LUSD currently held in the Stability Pool, expressed as an amount and a fraction of the LUSD supply.
-        "
+          name={`${COIN} in Stability Pool`}
+          tooltip={`The total ${COIN} currently held in the Stability Pool, expressed as an amount and a fraction of the ${COIN} supply.
+          `}
         >
           {lusdInStabilityPool.shorten()}
           <Text sx={{ fontSize: 1 }}>&nbsp;({lusdInStabilityPoolPct.toString(1)})</Text>
         </Statistic>
       )}
       <Statistic
-        name="Staked LQTY"
-        tooltip="The total amount of LQTY that is staked for earning fee revenue."
+        name={`Staked ${GT}`}
+        tooltip={`The total amount of ${GT} that is staked for earning fee revenue.`}
       >
         {totalStakedLQTY.shorten()}
       </Statistic>

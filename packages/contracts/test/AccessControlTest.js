@@ -67,7 +67,7 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
       await th.openTrove(coreContracts, { extraLUSDAmount: toBN(dec(20000, 18)), ICR: toBN(dec(2, 18)), extraParams: { from: account } })
     }
 
-    const expectedCISupplyCap = '32000000000000000000000000' // 32mil
+    const expectedCISupplyCap = '50000000000000000000000000' // 50mil
 
     // Check CI has been properly funded
     const bal = await lqtyToken.balanceOf(communityIssuance.address)
@@ -440,10 +440,10 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
   describe('LockupContract', async accounts => {
     it("withdrawLQTY(): reverts when caller is not beneficiary", async () => {
       // deploy new LC with Carol as beneficiary
-      const unlockTime = (await lqtyToken.getDeploymentStartTime()).add(toBN(timeValues.SECONDS_IN_ONE_YEAR))
+      const duration = toBN(timeValues.SECONDS_IN_ONE_YEAR)
       const deployedLCtx = await lockupContractFactory.deployLockupContract(
         carol, 
-        unlockTime,
+        duration,
         { from: owner })
 
       const LC = await th.getLCFromDeploymentTx(deployedLCtx)
@@ -456,14 +456,14 @@ contract('Access Control: Liquity functions with the caller restricted to Liquit
 
       // Bob attempts to withdraw LQTY
       try {
-        const txBob = await LC.withdrawLQTY({ from: bob })
+        const txBob = await LC.release(lqtyToken.address, { from: bob })
         
       } catch (err) {
         assert.include(err.message, "revert")
       }
 
       // Confirm beneficiary, Carol, can withdraw
-      const txCarol = await LC.withdrawLQTY({ from: carol })
+      const txCarol = await LC.release(lqtyToken.address, { from: carol })
       assert.isTrue(txCarol.receipt.status)
     })
   })

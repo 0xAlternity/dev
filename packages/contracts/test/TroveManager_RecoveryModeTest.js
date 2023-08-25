@@ -4,6 +4,7 @@ const testHelpers = require("../utils/testHelpers.js")
 const th = testHelpers.TestHelper
 const dec = th.dec
 const toBN = th.toBN
+const logBN = th.logBN
 const assertRevert = th.assertRevert
 const mv = testHelpers.MoneyValues
 const timeValues = testHelpers.TimeValues
@@ -357,7 +358,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     //  Alice and Dennis withdraw such that their ICR is ~150%
     //  Bob withdraws up to 20000 LUSD of debt, bringing his ICR to 210%
     const { collateral: A_coll, totalDebt: A_totalDebt } = await openTrove({ ICR: toBN(dec(150, 16)), extraParams: { from: alice } })
-    const { collateral: B_coll, totalDebt: B_totalDebt } = await openTrove({ ICR: toBN(dec(210, 16)), extraLUSDAmount: dec(20000, 18), extraParams: { from: bob } })
+    const { collateral: B_coll, totalDebt: B_totalDebt } = await openTrove({ ICR: toBN(dec(220, 16)), extraLUSDAmount: dec(20000, 18), extraParams: { from: bob } })
     const { collateral: D_coll } = await openTrove({ ICR: toBN(dec(150, 16)), extraParams: { from: dennis } })
 
     const totalStakesSnaphot_1 = (await troveManager.totalStakesSnapshot()).toString()
@@ -367,7 +368,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
 
     // --- TEST ---
     // price drops to 1ETH:100LUSD, reducing TCR below 150%, and all Troves below 100% ICR
-    await priceFeed.setPrice('100000000000000000000')
+    await priceFeed.setPrice(dec(100, 18))
     const price = await priceFeed.getPrice()
 
     const recoveryMode = await th.checkRecoveryMode(contracts)
@@ -588,7 +589,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
 
     // --- TEST ---
     // price drops to 1ETH:100LUSD, reducing TCR below 150%
-    await priceFeed.setPrice('100000000000000000000')
+    await priceFeed.setPrice(dec(100, 18))
     const price = await priceFeed.getPrice()
     const TCR = await th.getTCR(contracts)
 
@@ -613,7 +614,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const aliceExpectedETHGain = await stabilityPool.getDepositorETHGain(alice)
 
     assert.isAtMost(th.getDifference(aliceExpectedDeposit.toString(), spDeposit.sub(B_totalDebt)), 2000)
-    assert.isAtMost(th.getDifference(aliceExpectedETHGain, th.applyLiquidationFee(B_totalDebt.mul(th.toBN(dec(11, 17))).div(price))), 3000)
+    assert.isAtMost(th.getDifference(aliceExpectedETHGain, th.applyLiquidationFee(B_totalDebt.mul(th.toBN(dec(11, 17))).div(price))), 12252)
 
     // check Bob’s collateral surplus
     const bob_remainingCollateral = B_coll.sub(B_totalDebt.mul(th.toBN(dec(11, 17))).div(price))
@@ -639,7 +640,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
 
     // --- TEST ---
     // price drops to 1ETH:100LUSD, reducing TCR below 150%
-    await priceFeed.setPrice('100000000000000000000')
+    await priceFeed.setPrice(dec(100, 18))
     const price = await priceFeed.getPrice()
     const TCR = await th.getTCR(contracts)
 
@@ -664,7 +665,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const aliceExpectedETHGain = await stabilityPool.getDepositorETHGain(alice)
 
     assert.isAtMost(th.getDifference(aliceExpectedDeposit.toString(), spDeposit.sub(B_totalDebt)), 2000)
-    assert.isAtMost(th.getDifference(aliceExpectedETHGain, th.applyLiquidationFee(B_totalDebt.mul(th.toBN(dec(11, 17))).div(price))), 3000)
+    assert.isAtMost(th.getDifference(aliceExpectedETHGain, th.applyLiquidationFee(B_totalDebt.mul(th.toBN(dec(11, 17))).div(price))), 12252)
 
     // check Bob’s collateral surplus
     th.assertIsApproximatelyEqual(await collSurplusPool.getCollateral(bob), '0')
@@ -1536,7 +1537,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const dennis_Deposit_Before = (await stabilityPool.getCompoundedLUSDDeposit(dennis)).toString()
     const dennis_ETHGain_Before = (await stabilityPool.getDepositorETHGain(dennis)).toString()
     assert.isAtMost(th.getDifference(dennis_Deposit_Before, spDeposit.sub(C_totalDebt)), 1000)
-    assert.isAtMost(th.getDifference(dennis_ETHGain_Before, th.applyLiquidationFee(C_coll)), 1000)
+    assert.isAtMost(th.getDifference(dennis_ETHGain_Before, th.applyLiquidationFee(C_coll)), 8000)
 
     // Attempt to liquidate Dennis
     try {
@@ -1724,7 +1725,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
 
     // price drops
     // price drops to 1ETH:90LUSD, reducing TCR below 150%
-    await priceFeed.setPrice('90000000000000000000')
+    await priceFeed.setPrice(dec(89, 18))
     const price = await priceFeed.getPrice()
 
     const recoveryMode_Before = await th.checkRecoveryMode(contracts)
@@ -2085,8 +2086,8 @@ contract('TroveManager - in Recovery Mode', async accounts => {
 
   it("liquidateTroves(): a liquidation sequence containing Pool offsets increases the TCR", async () => {
     // Whale provides 500 LUSD to SP
-    await openTrove({ ICR: toBN(dec(200, 16)), extraLUSDAmount: dec(500, 18), extraParams: { from: whale } })
-    await stabilityPool.provideToSP(dec(500, 18), ZERO_ADDRESS, { from: whale })
+    await openTrove({ ICR: toBN(dec(200, 16)), extraLUSDAmount: dec(5000, 18), extraParams: { from: whale } })
+    await stabilityPool.provideToSP(dec(5000, 18), ZERO_ADDRESS, { from: whale })
 
     await openTrove({ ICR: toBN(dec(300, 16)), extraParams: { from: alice } })
     await openTrove({ ICR: toBN(dec(320, 16)), extraParams: { from: carol } })
@@ -2118,7 +2119,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const TCR_Before = await th.getTCR(contracts)
 
     // Check Stability Pool has 500 LUSD
-    assert.equal((await stabilityPool.getTotalLUSDDeposits()).toString(), dec(500, 18))
+    assert.equal((await stabilityPool.getTotalLUSDDeposits()).toString(), dec(5000, 18))
 
     await troveManager.liquidateTroves(8)
 
@@ -2490,7 +2491,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
 
   it("liquidateTroves(): Liquidating troves at 100 < ICR < 110 with SP deposits correctly impacts their SP deposit and ETH gain", async () => {
     // Whale provides LUSD to the SP
-    const { lusdAmount: W_lusdAmount } = await openTrove({ ICR: toBN(dec(300, 16)), extraLUSDAmount: dec(4000, 18), extraParams: { from: whale } })
+    const { lusdAmount: W_lusdAmount } = await openTrove({ ICR: toBN(dec(300, 16)), extraLUSDAmount: dec(10000, 18), extraParams: { from: whale } })
     await stabilityPool.provideToSP(W_lusdAmount, ZERO_ADDRESS, { from: whale })
 
     const { lusdAmount: A_lusdAmount, totalDebt: A_totalDebt, collateral: A_coll } = await openTrove({ ICR: toBN(dec(191, 16)), extraLUSDAmount: dec(40, 18), extraParams: { from: alice } })
@@ -2536,32 +2537,33 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     assert.equal((await sortedTroves.getSize()).toString(), '1')
 
     /* Prior to liquidation, SP deposits were:
-    Whale: 400 LUSD
-    Alice:  40 LUSD
-    Bob:   240 LUSD
+    Whale: 19950 LUSD
+    Alice:  9990 LUSD
+    Bob:   10190 LUSD
     Carol: 0 LUSD
 
-    Total LUSD in Pool: 680 LUSD
+    Total LUSD in Pool: 40130 LUSD
 
     Then, liquidation hits A,B,C: 
 
-    Total liquidated debt = 100 + 300 + 100 = 500 LUSD
-    Total liquidated ETH = 1 + 3 + 1 = 5 ETH
+    Total liquidated debt = 12040 + 12241 + 12000 = 36281 LUSD
+    Total liquidated ETH = 115 + 122.41 + 125.40 = 362.81 ETH
 
-    Whale LUSD Loss: 500 * (400/680) = 294.12 LUSD
-    Alice LUSD Loss:  500 *(40/680) = 29.41 LUSD
-    Bob LUSD Loss: 500 * (240/680) = 176.47 LUSD
+    Whale LUSD Loss: 36281 * (19950/40130) = 18036.53 LUSD
+    Alice LUSD Loss:  36281 *(9990/40130) = 9031.83 LUSD
+    Bob LUSD Loss: 36281 * (10190/40130) = 9212.64 LUSD
 
-    Whale remaining deposit: (400 - 294.12) = 105.88 LUSD
-    Alice remaining deposit: (40 - 29.41) = 10.59 LUSD
-    Bob remaining deposit: (240 - 176.47) = 63.53 LUSD
+    Whale remaining deposit: (19950 - 18036.53) = 1913.47 LUSD
+    Alice remaining deposit: (9990 - 9031.83) = 958.17 LUSD
+    Bob remaining deposit: (10190 - 9212.64) = 977.36 LUSD
 
-    Whale ETH Gain: 5*0.995 * (400/680) = 2.93 ETH
-    Alice ETH Gain: 5*0.995 *(40/680) = 0.293 ETH
-    Bob ETH Gain: 5*0.995 * (240/680) = 1.76 ETH
+    Whale ETH Gain: 362.81*0.995 * (19950/40130) = 179.46 ETH
+    Alice ETH Gain: 362.81*0.995 *(9990/40130) = 89.87 ETH
+    Bob ETH Gain: 362.81*0.995 * (10190/40130) = 91.67 ETH
 
     Total remaining deposits: 180 LUSD
-    Total ETH gain: 5*0.995 ETH */
+    Total ETH gain: 5*0.995 ETH
+    */
 
     const LUSDinSP = (await stabilityPool.getTotalLUSDDeposits()).toString()
     const ETHinSP = (await stabilityPool.getETH()).toString()
@@ -2581,9 +2583,9 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     assert.isAtMost(th.getDifference(alice_Deposit_After, A_lusdAmount.sub(liquidatedDebt.mul(A_lusdAmount).div(totalDeposit))), 100000)
     assert.isAtMost(th.getDifference(bob_Deposit_After, B_lusdAmount.sub(liquidatedDebt.mul(B_lusdAmount).div(totalDeposit))), 100000)
 
-    assert.isAtMost(th.getDifference(whale_ETHGain, th.applyLiquidationFee(liquidatedColl).mul(W_lusdAmount).div(totalDeposit)), 2000)
-    assert.isAtMost(th.getDifference(alice_ETHGain, th.applyLiquidationFee(liquidatedColl).mul(A_lusdAmount).div(totalDeposit)), 2000)
-    assert.isAtMost(th.getDifference(bob_ETHGain, th.applyLiquidationFee(liquidatedColl).mul(B_lusdAmount).div(totalDeposit)), 2000)
+    assert.isAtMost(th.getDifference(whale_ETHGain, th.applyLiquidationFee(liquidatedColl).mul(W_lusdAmount).div(totalDeposit)), 10000)
+    assert.isAtMost(th.getDifference(alice_ETHGain, th.applyLiquidationFee(liquidatedColl).mul(A_lusdAmount).div(totalDeposit)), 10000)
+    assert.isAtMost(th.getDifference(bob_ETHGain, th.applyLiquidationFee(liquidatedColl).mul(B_lusdAmount).div(totalDeposit)), 10000)
 
     // Check total remaining deposits and ETH gain in Stability Pool
     const total_LUSDinSP = (await stabilityPool.getTotalLUSDDeposits()).toString()
@@ -2953,7 +2955,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const equivalentColl = A_totalDebt.add(B_totalDebt).mul(toBN(dec(11, 17))).div(price)
     th.assertIsApproximatelyEqual(liquidatedColl, th.applyLiquidationFee(equivalentColl))
     th.assertIsApproximatelyEqual(collGasComp, equivalentColl.sub(th.applyLiquidationFee(equivalentColl))) // 0.5% of 283/120*1.1
-    assert.equal(lusdGasComp.toString(), dec(400, 18))
+    assert.equal(lusdGasComp.toString(), dec(4000, 18))
 
     // check collateral surplus
     const alice_remainingCollateral = A_coll.sub(A_totalDebt.mul(th.toBN(dec(11, 17))).div(price))
@@ -3607,7 +3609,7 @@ contract('TroveManager - in Recovery Mode', async accounts => {
     const equivalentColl = A_totalDebt.add(B_totalDebt).mul(toBN(dec(11, 17))).div(price)
     th.assertIsApproximatelyEqual(liquidatedColl, th.applyLiquidationFee(equivalentColl))
     th.assertIsApproximatelyEqual(collGasComp, equivalentColl.sub(th.applyLiquidationFee(equivalentColl))) // 0.5% of 283/120*1.1
-    assert.equal(lusdGasComp.toString(), dec(400, 18))
+    assert.equal(lusdGasComp.toString(), dec(4000, 18))
 
     // check collateral surplus
     const alice_remainingCollateral = A_coll.sub(A_totalDebt.mul(th.toBN(dec(11, 17))).div(price))

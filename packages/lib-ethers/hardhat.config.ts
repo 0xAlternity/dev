@@ -5,22 +5,20 @@ import dotenv from "dotenv";
 import "colors";
 
 import { JsonFragment } from "@ethersproject/abi";
-import { Wallet } from "@ethersproject/wallet";
-import { Signer } from "@ethersproject/abstract-signer";
-import { ContractFactory, Overrides } from "@ethersproject/contracts";
+import { Signer, Overrides, Wallet } from "ethers";
 
 import { task, HardhatUserConfig, types, extendEnvironment } from "hardhat/config";
-import { HardhatRuntimeEnvironment, NetworkUserConfig } from "hardhat/types";
-import "@nomiclabs/hardhat-ethers";
-
-import { Decimal } from "@liquity/lib-base";
+import { HardhatRuntimeEnvironment } from "hardhat/types";
 
 import { deployAndSetupContracts, deployTellorCaller, setSilent } from "./utils/deploy";
 import { _connectToContracts, _LiquityDeploymentJSON, _priceFeedIsTestnet } from "./src/contracts";
 
 import accounts from "./accounts.json";
+import { formatEther, parseUnits } from "ethers/lib/utils";
 
 dotenv.config();
+
+import "@nomiclabs/hardhat-ethers";
 
 const numAccounts = 100;
 
@@ -53,70 +51,79 @@ const generateRandomAccounts = (numberOfAccounts: number) => {
 const deployerAccount = process.env.DEPLOYER_PRIVATE_KEY || Wallet.createRandom().privateKey;
 const devChainRichAccount = "0x4d5db4107d237df6a3d58ee5f70ae63d73d7658d4026f2eefd2f204c81682cb7";
 
-const infuraApiKey = "ad9cef41c9c844a7b54d10be24d416e5";
+const alchemyApiKey = process.env.ALCHEMY_API_KEY || "";
+const infuraApiKey = process.env.INFURA_API_KEY || "";
 
-const infuraNetwork = (name: string): { [name: string]: NetworkUserConfig } => ({
-  [name]: {
-    url: `https://${name}.infura.io/v3/${infuraApiKey}`,
-    accounts: [deployerAccount]
-  }
-});
+// ALTR Token distribution
+const LP_REWARD_ADDRESS = process.env.LP_REWARD_ADDRESS || Wallet.createRandom().address;
+const MULTISIG_ADDRESS = process.env.MULTISIG_ADDRESS || Wallet.createRandom().address;
 
 // https://docs.chain.link/docs/ethereum-addresses
 // https://docs.tellor.io/tellor/integration/reference-page
 
-const oracleAddresses = {
+export type OracleConfig = {
+  chainlinkEth: string;
+  chainlinkCny: string;
+  tellor: string;
+};
+
+export type OracleNetworkConfig = { [name: string]: OracleConfig };
+
+const oracleAddresses: OracleNetworkConfig = {
+  hardhat: {
+    chainlinkEth: "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419",
+    chainlinkCny: "0xef8a4af35cd47424672e3c590abd37fbb7a7759a",
+    tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
+  },
   mainnet: {
-    chainlink: "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419",
-    tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0"
+    chainlinkEth: "0x5f4ec3df9cbd43714fe2740f5e3616155c5b8419",
+    chainlinkCny: "0xef8a4af35cd47424672e3c590abd37fbb7a7759a",
+    tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0"
   },
-  rinkeby: {
-    chainlink: "0x8A753747A1Fa494EC906cE90E9f37563A8AF630e",
-    tellor: "0x88dF592F8eb5D7Bd38bFeF7dEb0fBc02cf3778a0" // Core
-  },
-  kovan: {
-    chainlink: "0x9326BFA02ADD2366b30bacB125260Af641031331",
-    tellor: "0x20374E579832859f180536A69093A126Db1c8aE9" // Playground
+  polygon: {
+    chainlinkEth: "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+    chainlinkCny: "0x04bb437aa63e098236fa47365f0268547f6eab32",
+    tellor: "0xD9157453E2668B2fc45b7A803D3FEF3642430cC0" // Core
   }
 };
 
-const hasOracles = (network: string): network is keyof typeof oracleAddresses =>
-  network in oracleAddresses;
-
-const wethAddresses = {
-  mainnet: "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2",
-  ropsten: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
-  rinkeby: "0xc778417E063141139Fce010982780140Aa0cD5Ab",
-  goerli: "0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6",
-  kovan: "0xd0A1E359811322d97991E03f863a0C30C2cF029C"
+const merkleRoot: { [name: string]: string } = {
+  hardhat: "0xd0aa6a4e5b4e13462921d7518eebdb7b297a7877d6cfe078b0c318827392fb55",
+  sepolia: "0x8af3681f96bb109a6310baefb635252de69cd6b1e4be03fcdd8f5dfae6e3e154",
+  mainnet: "0x8af3681f96bb109a6310baefb635252de69cd6b1e4be03fcdd8f5dfae6e3e154"
 };
 
-const hasWETH = (network: string): network is keyof typeof wethAddresses => network in wethAddresses;
+const hasOracles = (network: string): boolean => network in oracleAddresses;
 
 const config: HardhatUserConfig = {
   networks: {
     hardhat: {
-      accounts: accounts.slice(0, numAccounts),
+      accounts: accounts.slice(0, 5),
 
-      gas: 12e6, // tx gas limit
-      blockGasLimit: 12e6,
+      //gas: 12e6, // tx gas limit
+      //blockGasLimit: 12e6,
 
       // Let Ethers throw instead of Buidler EVM
       // This is closer to what will happen in production
       throwOnCallFailures: false,
-      throwOnTransactionFailures: false
+      throwOnTransactionFailures: false,
+      forking: {
+        url: `https://eth-mainnet.g.alchemy.com/v2/${alchemyApiKey}`,
+        blockNumber: process.env.BLOCK_NUMBER ? parseInt(process.env.BLOCK_NUMBER) : 17712550
+      }
     },
-
     dev: {
       url: "http://localhost:8545",
-      accounts: [deployerAccount, devChainRichAccount, ...generateRandomAccounts(numAccounts - 2)]
+      accounts: [devChainRichAccount, ...generateRandomAccounts(numAccounts - 2)]
     },
-
-    ...infuraNetwork("ropsten"),
-    ...infuraNetwork("rinkeby"),
-    ...infuraNetwork("goerli"),
-    ...infuraNetwork("kovan"),
-    ...infuraNetwork("mainnet")
+    mainnet: {
+      url: `https://mainnet.infura.io/v3/${infuraApiKey}`,
+      accounts: [deployerAccount]
+    },
+    sepolia: {
+      url: `https://sepolia.infura.io/v3/${infuraApiKey}`,
+      accounts: [deployerAccount]
+    }
   },
 
   paths: {
@@ -129,8 +136,9 @@ declare module "hardhat/types/runtime" {
   interface HardhatRuntimeEnvironment {
     deployLiquity: (
       deployer: Signer,
+      distribution: [string, string],
+      merkleRoot: string,
       useRealPriceFeed?: boolean,
-      wethAddress?: string,
       overrides?: Overrides
     ) => Promise<_LiquityDeploymentJSON>;
   }
@@ -139,28 +147,34 @@ declare module "hardhat/types/runtime" {
 const getLiveArtifact = (name: string): { abi: JsonFragment[]; bytecode: string } =>
   require(`./live/${name}.json`);
 
-const getContractFactory: (
-  env: HardhatRuntimeEnvironment
-) => (name: string, signer: Signer) => Promise<ContractFactory> = useLiveVersion
-  ? env => (name, signer) => {
-      const { abi, bytecode } = getLiveArtifact(name);
-      return env.ethers.getContractFactory(abi, bytecode, signer);
-    }
-  : env => env.ethers.getContractFactory;
+// const getContractFactory: (
+//   env: HardhatRuntimeEnvironment
+// ) => (name: string, signer?: Signer | FactoryOptions) => Promise<ContractFactory> = useLiveVersion
+//   ? env => (name, signer) => {
+//       const { abi, bytecode } = getLiveArtifact(name);
+//       return env.ethers.getContractFactory(abi, bytecode, signer);
+//     }
+//   : env => env.ethers.getContractFactory;
+
+const getContractFactory = (env: HardhatRuntimeEnvironment) => {
+  return env.ethers.getContractFactory;
+};
 
 extendEnvironment(env => {
   env.deployLiquity = async (
     deployer,
+    distribution,
+    merkleRoot,
     useRealPriceFeed = false,
-    wethAddress = undefined,
     overrides?: Overrides
   ) => {
     const deployment = await deployAndSetupContracts(
       deployer,
+      distribution,
+      merkleRoot,
       getContractFactory(env),
       !useRealPriceFeed,
       env.network.name === "dev",
-      wethAddress,
       overrides
     );
 
@@ -170,87 +184,70 @@ extendEnvironment(env => {
 
 type DeployParams = {
   channel: string;
-  gasPrice?: number;
-  useRealPriceFeed?: boolean;
-  createUniswapPair?: boolean;
+  gas?: string;
 };
 
 const defaultChannel = process.env.CHANNEL || "default";
 
 task("deploy", "Deploys the contracts to the network")
   .addOptionalParam("channel", "Deployment channel to deploy into", defaultChannel, types.string)
-  .addOptionalParam("gasPrice", "Price to pay for 1 gas [Gwei]", undefined, types.float)
-  .addOptionalParam(
-    "useRealPriceFeed",
-    "Deploy the production version of PriceFeed and connect it to Chainlink",
-    undefined,
-    types.boolean
-  )
-  .addOptionalParam(
-    "createUniswapPair",
-    "Create a real Uniswap v2 WETH-LUSD pair instead of a mock ERC20 token",
-    undefined,
-    types.boolean
-  )
-  .setAction(
-    async ({ channel, gasPrice, useRealPriceFeed, createUniswapPair }: DeployParams, env) => {
-      const overrides = { gasPrice: gasPrice && Decimal.from(gasPrice).div(1000000000).hex };
-      const [deployer] = await env.ethers.getSigners();
+  .addOptionalParam("gas", "Price to pay for gas [Gwei]", undefined, types.string)
+  .setAction(async ({ channel, gas }: DeployParams, env) => {
+    const overrides = { gasPrice: gas ? parseUnits(gas, "gwei") : parseUnits("20", "gwei") };
+    const [deployer] = await env.ethers.getSigners();
 
-      useRealPriceFeed ??= env.network.name === "mainnet";
+    const startBal = await deployer.getBalance();
 
-      if (useRealPriceFeed && !hasOracles(env.network.name)) {
-        throw new Error(`PriceFeed not supported on ${env.network.name}`);
-      }
+    const real = env.network.name === "mainnet" || env.network.name === "hardhat";
 
-      let wethAddress: string | undefined = undefined;
-      if (createUniswapPair) {
-        if (!hasWETH(env.network.name)) {
-          throw new Error(`WETH not deployed on ${env.network.name}`);
-        }
-        wethAddress = wethAddresses[env.network.name];
-      }
+    if (real && !hasOracles(env.network.name)) {
+      throw new Error(`PriceFeed not supported on ${env.network.name}`);
+    }
 
-      setSilent(false);
+    setSilent(false);
 
-      const deployment = await env.deployLiquity(deployer, useRealPriceFeed, wethAddress, overrides);
+    const deployment = await env.deployLiquity(
+      deployer,
+      [LP_REWARD_ADDRESS, MULTISIG_ADDRESS],
+      merkleRoot[env.network.name],
+      real,
+      overrides
+    );
 
-      if (useRealPriceFeed) {
-        const contracts = _connectToContracts(deployer, deployment);
+    if (real) {
+      const contracts = _connectToContracts(deployer, deployment);
 
-        assert(!_priceFeedIsTestnet(contracts.priceFeed));
+      assert(!_priceFeedIsTestnet(contracts.priceFeed));
 
-        if (hasOracles(env.network.name)) {
-          const tellorCallerAddress = await deployTellorCaller(
-            deployer,
-            getContractFactory(env),
-            oracleAddresses[env.network.name].tellor,
-            overrides
-          );
-
-          console.log(`Hooking up PriceFeed with oracles ...`);
-
-          const tx = await contracts.priceFeed.setAddresses(
-            oracleAddresses[env.network.name].chainlink,
-            tellorCallerAddress,
-            overrides
-          );
-
-          await tx.wait();
-        }
-      }
-
-      fs.mkdirSync(path.join("deployments", channel), { recursive: true });
-
-      fs.writeFileSync(
-        path.join("deployments", channel, `${env.network.name}.json`),
-        JSON.stringify(deployment, undefined, 2)
+      const tellorCallerAddress = await deployTellorCaller(
+        deployer,
+        getContractFactory(env),
+        oracleAddresses[env.network.name].tellor,
+        overrides
       );
 
-      console.log();
-      console.log(deployment);
-      console.log();
+      console.log(`Hooking up PriceFeed with oracles ...`);
+
+      const tx = await contracts.priceFeed.setAddresses(
+        oracleAddresses[env.network.name].chainlinkEth,
+        oracleAddresses[env.network.name].chainlinkCny,
+        tellorCallerAddress,
+        overrides
+      );
+
+      await tx.wait();
     }
-  );
+
+    fs.mkdirSync(path.join("deployments", channel), { recursive: true });
+
+    fs.writeFileSync(
+      path.join("deployments", channel, `${env.network.name}.json`),
+      JSON.stringify(deployment, undefined, 2)
+    );
+
+    console.log(deployment);
+    const endBal = await deployer.getBalance();
+    console.log("ETH to deploy: ", formatEther(startBal.sub(endBal)));
+  });
 
 export default config;

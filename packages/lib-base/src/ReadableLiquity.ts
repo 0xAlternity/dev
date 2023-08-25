@@ -210,4 +210,18 @@ export interface ReadableLiquity {
    * @param address - Address to check.
    */
   getFrontendStatus(address?: string): Promise<FrontendStatus>;
+
+  /**
+   * Get the total amount of claimable LQTY rewards.
+   *
+   * @param address - Address whose balance should be retrieved.
+   */
+  getAirdropClaimableLQTY(address?: string): Promise<Decimal>;
+
+  /**
+   * Get the status of airdrop claim.
+   *
+   * @param address - Address whose status should be retrieved.
+   */
+  getAirdropHasClaimed(address?: string): Promise<boolean>;
 }

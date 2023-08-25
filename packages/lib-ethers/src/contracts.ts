@@ -29,9 +29,7 @@ import priceFeedTestnetAbi from "../abi/PriceFeedTestnet.json";
 import sortedTrovesAbi from "../abi/SortedTroves.json";
 import stabilityPoolAbi from "../abi/StabilityPool.json";
 import gasPoolAbi from "../abi/GasPool.json";
-import unipoolAbi from "../abi/Unipool.json";
-import iERC20Abi from "../abi/IERC20.json";
-import erc20MockAbi from "../abi/ERC20Mock.json";
+import merkleDistributorAbi from "../abi/MerkleDistributor.json";
 
 import {
   ActivePool,
@@ -51,9 +49,7 @@ import {
   SortedTroves,
   StabilityPool,
   GasPool,
-  Unipool,
-  ERC20Mock,
-  IERC20
+  MerkleDistributor
 } from "../types";
 
 import { EthersProvider, EthersSigner } from "./types";
@@ -181,18 +177,13 @@ export interface _LiquityContracts {
   sortedTroves: SortedTroves;
   stabilityPool: StabilityPool;
   gasPool: GasPool;
-  unipool: Unipool;
-  uniToken: IERC20 | ERC20Mock;
+  merkleDistributor: MerkleDistributor;
 }
 
 /** @internal */
 export const _priceFeedIsTestnet = (
   priceFeed: PriceFeed | PriceFeedTestnet
 ): priceFeed is PriceFeedTestnet => "setPrice" in priceFeed;
-
-/** @internal */
-export const _uniTokenIsMock = (uniToken: IERC20 | ERC20Mock): uniToken is ERC20Mock =>
-  "mint" in uniToken;
 
 type LiquityContractsKey = keyof _LiquityContracts;
 
@@ -201,7 +192,7 @@ export type _LiquityContractAddresses = Record<LiquityContractsKey, string>;
 
 type LiquityContractAbis = Record<LiquityContractsKey, JsonFragment[]>;
 
-const getAbi = (priceFeedIsTestnet: boolean, uniTokenIsMock: boolean): LiquityContractAbis => ({
+const getAbi = (priceFeedIsTestnet: boolean): LiquityContractAbis => ({
   activePool: activePoolAbi,
   borrowerOperations: borrowerOperationsAbi,
   troveManager: troveManagerAbi,
@@ -218,8 +209,7 @@ const getAbi = (priceFeedIsTestnet: boolean, uniTokenIsMock: boolean): LiquityCo
   stabilityPool: stabilityPoolAbi,
   gasPool: gasPoolAbi,
   collSurplusPool: collSurplusPoolAbi,
-  unipool: unipoolAbi,
-  uniToken: uniTokenIsMock ? erc20MockAbi : iERC20Abi
+  merkleDistributor: merkleDistributorAbi
 });
 
 const mapLiquityContracts = <T, U>(
@@ -241,16 +231,15 @@ export interface _LiquityDeploymentJSON {
   readonly totalStabilityPoolLQTYReward: string;
   readonly liquidityMiningLQTYRewardRate: string;
   readonly _priceFeedIsTestnet: boolean;
-  readonly _uniTokenIsMock: boolean;
   readonly _isDev: boolean;
 }
 
 /** @internal */
 export const _connectToContracts = (
   signerOrProvider: EthersSigner | EthersProvider,
-  { addresses, _priceFeedIsTestnet, _uniTokenIsMock }: _LiquityDeploymentJSON
+  { addresses, _priceFeedIsTestnet }: _LiquityDeploymentJSON
 ): _LiquityContracts => {
-  const abi = getAbi(_priceFeedIsTestnet, _uniTokenIsMock);
+  const abi = getAbi(_priceFeedIsTestnet);
 
   return mapLiquityContracts(
     addresses,

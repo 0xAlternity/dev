@@ -123,6 +123,8 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
             lqtyBalance: this._readable.getLQTYBalance(userAddress, { blockTag }),
             uniTokenBalance: this._readable.getUniTokenBalance(userAddress, { blockTag }),
             uniTokenAllowance: this._readable.getUniTokenAllowance(userAddress, { blockTag }),
+            airdropClaimableLQTY: this._readable.getAirdropClaimableLQTY(userAddress, { blockTag }),
+            airdropHasClaimed: this._readable.getAirdropHasClaimed(userAddress, { blockTag }),
             liquidityMiningStake: this._readable.getLiquidityMiningStake(userAddress, { blockTag }),
             liquidityMiningLQTYReward: this._readable.getLiquidityMiningLQTYReward(userAddress, {
               blockTag
@@ -143,6 +145,8 @@ export class BlockPolledLiquityStore extends LiquityStore<BlockPolledLiquityStor
             lqtyBalance: Decimal.ZERO,
             uniTokenBalance: Decimal.ZERO,
             uniTokenAllowance: Decimal.ZERO,
+            airdropClaimableLQTY: Decimal.ZERO,
+            airdropHasClaimed: true,
             liquidityMiningStake: Decimal.ZERO,
             liquidityMiningLQTYReward: Decimal.ZERO,
             collateralSurplusBalance: Decimal.ZERO,

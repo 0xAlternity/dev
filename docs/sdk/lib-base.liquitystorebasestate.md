@@ -17,6 +17,8 @@ export interface LiquityStoreBaseState
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [accountBalance](./lib-base.liquitystorebasestate.accountbalance.md) | [Decimal](./lib-base.decimal.md) | User's native currency balance (e.g. Ether). |
+|  [airdropClaimableLQTY](./lib-base.liquitystorebasestate.airdropclaimablelqty.md) | [Decimal](./lib-base.decimal.md) | Airdrop amount available for the user. |
+|  [airdropHasClaimed](./lib-base.liquitystorebasestate.airdrophasclaimed.md) | boolean | Airdrop claim status for the user. |
 |  [collateralSurplusBalance](./lib-base.liquitystorebasestate.collateralsurplusbalance.md) | [Decimal](./lib-base.decimal.md) | Amount of leftover collateral available for withdrawal to the user. |
 |  [frontend](./lib-base.liquitystorebasestate.frontend.md) | [FrontendStatus](./lib-base.frontendstatus.md) | Status of currently used frontend. |
 |  [liquidityMiningLQTYReward](./lib-base.liquitystorebasestate.liquiditymininglqtyreward.md) | [Decimal](./lib-base.decimal.md) | Amount of LQTY the user has earned through mining liquidity. |

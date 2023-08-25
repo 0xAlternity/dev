@@ -22,7 +22,7 @@ const timeValues = testHelpers.TimeValues
 const ZERO_ADDRESS = th.ZERO_ADDRESS
 const assertRevert = th.assertRevert
 
-contract('LQTY Token', async accounts => {
+contract('ALTR Token', async accounts => {
   const [owner, A, B, C, D] = accounts
 
   const [bountyAddress, lpRewardsAddress, multisig] = accounts.slice(997, 1000)
@@ -144,12 +144,12 @@ contract('LQTY Token', async accounts => {
 
   it("name(): returns the token's name", async () => {
     const name = await lqtyTokenTester.name()
-    assert.equal(name, "LQTY")
+    assert.equal(name, "ALTR")
   })
 
   it("symbol(): returns the token's symbol", async () => {
     const symbol = await lqtyTokenTester.symbol()
-    assert.equal(symbol, "LQTY")
+    assert.equal(symbol, "ALTR")
   })
 
   it("version(): returns the token contract's version", async () => {

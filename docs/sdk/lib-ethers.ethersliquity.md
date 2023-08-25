@@ -32,12 +32,15 @@ The constructor for this class is marked as internal. Third-party code should no
 |  [adjustTrove(params, maxBorrowingRateOrOptionalParams, overrides)](./lib-ethers.ethersliquity.adjusttrove.md) |  | Adjust existing Trove by changing its collateral, debt, or both. |
 |  [approveUniTokens(allowance, overrides)](./lib-ethers.ethersliquity.approveunitokens.md) |  | Allow the liquidity mining contract to use Uniswap ETH/LUSD LP tokens for [staking](./lib-base.transactableliquity.stakeunitokens.md)<!-- -->. |
 |  [borrowLUSD(amount, maxBorrowingRate, overrides)](./lib-ethers.ethersliquity.borrowlusd.md) |  | Adjust existing Trove by borrowing more LUSD. |
+|  [claimAirdrop(overrides)](./lib-ethers.ethersliquity.claimairdrop.md) |  | Claim airdrop rewards. |
 |  [claimCollateralSurplus(overrides)](./lib-ethers.ethersliquity.claimcollateralsurplus.md) |  | Claim leftover collateral after a liquidation or redemption. |
 |  [closeTrove(overrides)](./lib-ethers.ethersliquity.closetrove.md) |  | Close existing Trove by repaying all debt and withdrawing all collateral. |
 |  [connect(signerOrProvider, optionalParams)](./lib-ethers.ethersliquity.connect_1.md) | <code>static</code> | Connect to the Liquity protocol and create an <code>EthersLiquity</code> object. |
 |  [depositCollateral(amount, overrides)](./lib-ethers.ethersliquity.depositcollateral.md) |  | Adjust existing Trove by depositing more collateral. |
 |  [depositLUSDInStabilityPool(amount, frontendTag, overrides)](./lib-ethers.ethersliquity.depositlusdinstabilitypool.md) |  | Make a new Stability Deposit, or top up existing one. |
 |  [exitLiquidityMining(overrides)](./lib-ethers.ethersliquity.exitliquiditymining.md) |  | Withdraw all staked LP tokens from liquidity mining and claim reward. |
+|  [getAirdropClaimableLQTY(address, overrides)](./lib-ethers.ethersliquity.getairdropclaimablelqty.md) |  | Get the total amount of claimable LQTY rewards. |
+|  [getAirdropHasClaimed(address, overrides)](./lib-ethers.ethersliquity.getairdrophasclaimed.md) |  | Get the status of airdrop claim. |
 |  [getCollateralSurplusBalance(address, overrides)](./lib-ethers.ethersliquity.getcollateralsurplusbalance.md) |  | Get the amount of leftover collateral available for withdrawal by an address. |
 |  [getFees(overrides)](./lib-ethers.ethersliquity.getfees.md) |  | Get a calculator for current fees. |
 |  [getFrontendStatus(address, overrides)](./lib-ethers.ethersliquity.getfrontendstatus.md) |  | Check whether an address is registered as a Liquity frontend, and what its kickback rate is. |

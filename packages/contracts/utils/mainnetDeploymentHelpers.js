@@ -136,22 +136,24 @@ class MainnetDeploymentHelper {
     return coreContracts
   }
 
-  async deployLQTYContractsMainnet(bountyAddress, lpRewardsAddress, multisigAddress, deploymentState) {
+  async deployLQTYContractsMainnet(lpRewardsAddress, multisigAddress, deploymentState) {
     const lqtyStakingFactory = await this.getFactory("LQTYStaking")
     const lockupContractFactory_Factory = await this.getFactory("LockupContractFactory")
     const communityIssuanceFactory = await this.getFactory("CommunityIssuance")
     const lqtyTokenFactory = await this.getFactory("LQTYToken")
+    const merkleDistributorFactory = await this.getFactory("MerkleDistributor")
 
     const lqtyStaking = await this.loadOrDeploy(lqtyStakingFactory, 'lqtyStaking', deploymentState)
     const lockupContractFactory = await this.loadOrDeploy(lockupContractFactory_Factory, 'lockupContractFactory', deploymentState)
     const communityIssuance = await this.loadOrDeploy(communityIssuanceFactory, 'communityIssuance', deploymentState)
+    const merkleDistributor = await this.loadOrDeploy(merkleDistributorFactory, 'merkleDistributor', deploymentState)
 
     // Deploy LQTY Token, passing Community Issuance and Factory addresses to the constructor
     const lqtyTokenParams = [
       communityIssuance.address,
       lqtyStaking.address,
       lockupContractFactory.address,
-      bountyAddress,
+      merkleDistributor.address,
       lpRewardsAddress,
       multisigAddress
     ]
@@ -168,6 +170,7 @@ class MainnetDeploymentHelper {
       await this.verifyContract('lqtyStaking', deploymentState)
       await this.verifyContract('lockupContractFactory', deploymentState)
       await this.verifyContract('communityIssuance', deploymentState)
+      await this.verifyContract('merkleDistributor', deploymentState)
       await this.verifyContract('lqtyToken', deploymentState, lqtyTokenParams)
     }
 
@@ -175,22 +178,10 @@ class MainnetDeploymentHelper {
       lqtyStaking,
       lockupContractFactory,
       communityIssuance,
+      merkleDistributor,
       lqtyToken
     }
     return LQTYContracts
-  }
-
-  async deployUnipoolMainnet(deploymentState) {
-    const unipoolFactory = await this.getFactory("Unipool")
-    const unipool = await this.loadOrDeploy(unipoolFactory, 'unipool', deploymentState)
-
-    if (!this.configParams.ETHERSCAN_BASE_URL) {
-      console.log('No Etherscan Url defined, skipping verification')
-    } else {
-      await this.verifyContract('unipool', deploymentState)
-    }
-
-    return unipool
   }
 
   async deployMultiTroveGetterMainnet(liquityCore, deploymentState) {
@@ -221,11 +212,16 @@ class MainnetDeploymentHelper {
     return owner == ZERO_ADDRESS
   }
   // Connect contracts to their dependencies
-  async connectCoreContractsMainnet(contracts, LQTYContracts, chainlinkProxyAddress) {
+  async connectCoreContractsMainnet(contracts, LQTYContracts, chainlinkEth, chainlinkCny) {
     const gasPrice = this.configParams.GAS_PRICE
     // Set ChainlinkAggregatorProxy and TellorCaller in the PriceFeed
     await this.isOwnershipRenounced(contracts.priceFeed) ||
-      await this.sendAndWaitForTransaction(contracts.priceFeed.setAddresses(chainlinkProxyAddress, contracts.tellorCaller.address, {gasPrice}))
+      await this.sendAndWaitForTransaction(contracts.priceFeed.setAddresses(
+        chainlinkEth,
+        chainlinkCny,
+        contracts.tellorCaller.address,
+        {gasPrice}
+      ))
 
     // set TroveManager addr in SortedTroves
     await this.isOwnershipRenounced(contracts.sortedTroves) ||
@@ -233,7 +229,7 @@ class MainnetDeploymentHelper {
         maxBytes32,
         contracts.troveManager.address,
         contracts.borrowerOperations.address, 
-	{gasPrice}
+	      {gasPrice}
       ))
 
     // set contracts in the Trove Manager
@@ -250,7 +246,7 @@ class MainnetDeploymentHelper {
         contracts.sortedTroves.address,
         LQTYContracts.lqtyToken.address,
         LQTYContracts.lqtyStaking.address,
-	{gasPrice}
+	      {gasPrice}
       ))
 
     // set contracts in BorrowerOperations 
@@ -266,7 +262,7 @@ class MainnetDeploymentHelper {
         contracts.sortedTroves.address,
         contracts.lusdToken.address,
         LQTYContracts.lqtyStaking.address,
-	{gasPrice}
+	      {gasPrice}
       ))
 
     // set contracts in the Pools
@@ -279,7 +275,7 @@ class MainnetDeploymentHelper {
         contracts.sortedTroves.address,
         contracts.priceFeed.address,
         LQTYContracts.communityIssuance.address,
-	{gasPrice}
+	      {gasPrice}
       ))
 
     await this.isOwnershipRenounced(contracts.activePool) ||
@@ -288,14 +284,14 @@ class MainnetDeploymentHelper {
         contracts.troveManager.address,
         contracts.stabilityPool.address,
         contracts.defaultPool.address,
-	{gasPrice}
+	      {gasPrice}
       ))
 
     await this.isOwnershipRenounced(contracts.defaultPool) ||
       await this.sendAndWaitForTransaction(contracts.defaultPool.setAddresses(
         contracts.troveManager.address,
         contracts.activePool.address,
-	{gasPrice}
+	      {gasPrice}
       ))
 
     await this.isOwnershipRenounced(contracts.collSurplusPool) ||
@@ -303,7 +299,7 @@ class MainnetDeploymentHelper {
         contracts.borrowerOperations.address,
         contracts.troveManager.address,
         contracts.activePool.address,
-	{gasPrice}
+	      {gasPrice}
       ))
 
     // set contracts in HintHelpers
@@ -311,15 +307,25 @@ class MainnetDeploymentHelper {
       await this.sendAndWaitForTransaction(contracts.hintHelpers.setAddresses(
         contracts.sortedTroves.address,
         contracts.troveManager.address,
-	{gasPrice}
+	      {gasPrice}
       ))
   }
 
-  async connectLQTYContractsMainnet(LQTYContracts) {
+  async connectLQTYContractsMainnet(LQTYContracts, merkleRoot) {
     const gasPrice = this.configParams.GAS_PRICE
     // Set LQTYToken address in LCF
-    await this.isOwnershipRenounced(LQTYContracts.lqtyStaking) ||
-      await this.sendAndWaitForTransaction(LQTYContracts.lockupContractFactory.setLQTYTokenAddress(LQTYContracts.lqtyToken.address, {gasPrice}))
+    await this.isOwnershipRenounced(LQTYContracts.lockupContractFactory) ||
+      await this.sendAndWaitForTransaction(LQTYContracts.lockupContractFactory.setLQTYTokenAddress(
+        LQTYContracts.lqtyToken.address, 
+        {gasPrice}
+      ))
+
+    await this.isOwnershipRenounced(LQTYContracts.merkleDistributor) ||
+      await this.sendAndWaitForTransaction(LQTYContracts.merkleDistributor.setParams(
+        LQTYContracts.lqtyToken.address,
+        merkleRoot,
+        {gasPrice}
+      ))
   }
 
   async connectLQTYContractsToCoreMainnet(LQTYContracts, coreContracts) {
@@ -331,21 +337,65 @@ class MainnetDeploymentHelper {
         coreContracts.troveManager.address, 
         coreContracts.borrowerOperations.address,
         coreContracts.activePool.address,
-	{gasPrice}
+	      {gasPrice}
       ))
 
     await this.isOwnershipRenounced(LQTYContracts.communityIssuance) ||
       await this.sendAndWaitForTransaction(LQTYContracts.communityIssuance.setAddresses(
         LQTYContracts.lqtyToken.address,
         coreContracts.stabilityPool.address,
-	{gasPrice}
+	      {gasPrice}
       ))
   }
 
-  async connectUnipoolMainnet(uniPool, LQTYContracts, LUSDWETHPairAddr, duration) {
+  async deployLockupContract(
+    LQTYContracts,
+    beneficiaryName,
+    beneficiaryAddress,
+    deploymentTime,
+    duration,
+    deploymentState
+  ) {
     const gasPrice = this.configParams.GAS_PRICE
-    await this.isOwnershipRenounced(uniPool) ||
-      await this.sendAndWaitForTransaction(uniPool.setParams(LQTYContracts.lqtyToken.address, LUSDWETHPairAddr, duration, {gasPrice}))
+    let contract = {}
+    const lockupContractEthersFactory = await ethers.getContractFactory("LockupContract", this.deployerWallet)
+
+    if (deploymentState[beneficiaryName] && deploymentState[beneficiaryName].address) {
+      console.log(`Using previously deployed ${beneficiaryName} lockup contract at address ${deploymentState[beneficiaryName].address}`)
+      contract = new ethers.Contract(
+        deploymentState[beneficiaryName].address,
+        lockupContractEthersFactory.interface,
+        this.deployerWallet
+      )
+    } else {
+      const txReceipt = await this.sendAndWaitForTransaction(
+        LQTYContracts.lockupContractFactory.deployLockupContract(
+          beneficiaryAddress,
+          duration,
+          { gasPrice }
+        )
+      )
+  
+      const address = await txReceipt.logs[0].address // The deployment event emitted from the LC itself is is the first of two events, so this is its address 
+      contract = new ethers.Contract(
+        address,
+        lockupContractEthersFactory.interface,
+        this.deployerWallet
+      )
+  
+      deploymentState[beneficiaryName] = {
+        address: address,
+        txHash: txReceipt.transactionHash
+      }
+  
+      this.saveDeployment(deploymentState)
+    }
+  
+    // verify
+    if (this.configParams.ETHERSCAN_BASE_URL) {
+      await this.verifyContract(beneficiaryName, deploymentState, [this.deployerWallet.address, beneficiaryAddress, deploymentTime, duration])
+    }
+    return contract
   }
 
   // --- Verify on Ethrescan ---
@@ -360,14 +410,16 @@ class MainnetDeploymentHelper {
     }
 
     try {
+      console.log(`Verifing contract ${name}...`)
       await this.hre.run("verify:verify", {
         address: deploymentState[name].address,
         constructorArguments,
+        noCompile: true,
       })
     } catch (error) {
       // if it was already verified, it’s like a success, so let’s move forward and save it
-      if (error.name != 'NomicLabsHardhatPluginError') {
-        console.error(`Error verifying: ${error.name}`)
+      if (!error.message.toLowerCase().includes("already verified")) {
+        console.error(`Error verifying: ${error.name} ${error.message}`)
         console.error(error)
         return
       }

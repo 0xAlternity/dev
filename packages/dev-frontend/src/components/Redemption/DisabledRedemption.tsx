@@ -2,6 +2,7 @@ import { Box, Card, Heading, Paragraph, Text } from "theme-ui";
 
 import { InfoMessage } from "../InfoMessage";
 import { Icon } from "../Icon";
+import { COIN } from "../../strings";
 
 type DisabledRedemptionProps = {
   disabledDays: number;
@@ -25,7 +26,7 @@ export const DisabledRedemption: React.FC<DisabledRedemptionProps> = ({
         }
       >
         <Paragraph>
-          LUSD redemption is disabled for the first {disabledDays} days after launch.
+          {COIN} redemption is disabled for the first {disabledDays} days after launch.
         </Paragraph>
 
         <Paragraph sx={{ mt: 3 }}>

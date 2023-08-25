@@ -367,4 +367,12 @@ export class SubgraphLiquity implements ReadableLiquity, ObservableLiquity {
   getRemainingStabilityPoolLQTYReward(): Promise<Decimal> {
     throw new Error("Method not implemented.");
   }
+
+  getAirdropClaimableLQTY(address?: string): Promise<Decimal> {
+    throw new Error("Method not implemented.");
+  }
+
+  getAirdropHasClaimed(address?: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
 }

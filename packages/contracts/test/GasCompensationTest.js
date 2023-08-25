@@ -194,7 +194,7 @@ contract('Gas compensation tests', async accounts => {
   // --- Composite debt calculations ---
 
   // gets debt + 50 when 0.5% of coll < $10
-  it('_getCompositeDebt(): returns (debt + 50) when collateral < $10 in value', async () => {
+  it('getCompositeDebt(): returns (debt + 50) when collateral < $10 in value', async () => {
     const price = await priceFeed.getPrice()
     assert.equal(price, dec(200, 18))
 
@@ -203,25 +203,25 @@ contract('Gas compensation tests', async accounts => {
     coll = 9.999 ETH 
     debt = 10 LUSD
     0.5% of coll = 0.04995 ETH. USD value: $9.99
-    -> Expect composite debt = 10 + 200  = 2100 LUSD*/
+    -> Expect composite debt = 10 + 2000  = 2010 LUSD*/
     const compositeDebt_1 = await troveManagerTester.getCompositeDebt(dec(10, 18))
-    assert.equal(compositeDebt_1, dec(210, 18))
+    assert.equal(compositeDebt_1, dec(2010, 18))
 
     /* ETH:USD price = 200
      coll = 0.055 ETH  
      debt = 0 LUSD
      0.5% of coll = 0.000275 ETH. USD value: $0.055
-     -> Expect composite debt = 0 + 200 = 200 LUSD*/
+     -> Expect composite debt = 0 + 2000 = 2000 LUSD*/
     const compositeDebt_2 = await troveManagerTester.getCompositeDebt(0)
-    assert.equal(compositeDebt_2, dec(200, 18))
+    assert.equal(compositeDebt_2, dec(2000, 18))
 
     // /* ETH:USD price = 200
     // coll = 6.09232408808723580 ETH 
     // debt = 200 LUSD 
     // 0.5% of coll = 0.004995 ETH. USD value: $6.09
-    // -> Expect  composite debt =  200 + 200 = 400  LUSD */
+    // -> Expect  composite debt =  200 + 2000 = 2200  LUSD */
     const compositeDebt_3 = await troveManagerTester.getCompositeDebt(dec(200, 18))
-    assert.equal(compositeDebt_3, '400000000000000000000')
+    assert.equal(compositeDebt_3, dec(2200, 18))
   })
 
   // returns $10 worth of ETH when 0.5% of coll == $10
@@ -234,9 +234,9 @@ contract('Gas compensation tests', async accounts => {
     coll = 10 ETH  
     debt = 123.45 LUSD
     0.5% of coll = 0.5 ETH. USD value: $10
-    -> Expect composite debt = (123.45 + 200) = 323.45 LUSD  */
+    -> Expect composite debt = (123.45 + 2000) = 2123.45 LUSD  */
     const compositeDebt = await troveManagerTester.getCompositeDebt('123450000000000000000')
-    assert.equal(compositeDebt, '323450000000000000000')
+    assert.equal(compositeDebt, '2123450000000000000000')
   })
 
   /// *** 
@@ -250,45 +250,45 @@ contract('Gas compensation tests', async accounts => {
     ETH:USD price = 200 $/E
     coll = 100 ETH  
     debt = 2000 LUSD
-    -> Expect composite debt = (2000 + 200) = 2200 LUSD  */
+    -> Expect composite debt = (2000 + 2000) = 4000 LUSD  */
     const compositeDebt_1 = (await troveManagerTester.getCompositeDebt(dec(2000, 18))).toString()
-    assert.equal(compositeDebt_1, '2200000000000000000000')
+    assert.equal(compositeDebt_1, '4000000000000000000000')
 
     /* 
     ETH:USD price = 200 $/E
     coll = 10.001 ETH  
     debt = 200 LUSD
-    -> Expect composite debt = (200 + 200) = 400 LUSD  */
+    -> Expect composite debt = (200 + 2000) = 2200 LUSD  */
     const compositeDebt_2 = (await troveManagerTester.getCompositeDebt(dec(200, 18))).toString()
-    assert.equal(compositeDebt_2, '400000000000000000000')
+    assert.equal(compositeDebt_2, '2200000000000000000000')
 
     /* 
     ETH:USD price = 200 $/E
     coll = 37.5 ETH  
     debt = 500 LUSD
-    -> Expect composite debt = (500 + 200) = 700 LUSD  */
+    -> Expect composite debt = (500 + 2000) = 2500 LUSD  */
     const compositeDebt_3 = (await troveManagerTester.getCompositeDebt(dec(500, 18))).toString()
-    assert.equal(compositeDebt_3, '700000000000000000000')
+    assert.equal(compositeDebt_3, '2500000000000000000000')
 
     /* 
     ETH:USD price = 45323.54542 $/E
     coll = 94758.230582309850 ETH  
     debt = 1 billion LUSD
-    -> Expect composite debt = (1000000000 + 200) = 1000000200 LUSD  */
+    -> Expect composite debt = (1000000000 + 2000) = 1000002000 LUSD  */
     await priceFeed.setPrice('45323545420000000000000')
     const price_2 = await priceFeed.getPrice()
     const compositeDebt_4 = (await troveManagerTester.getCompositeDebt(dec(1, 27))).toString()
-    assert.isAtMost(th.getDifference(compositeDebt_4, '1000000200000000000000000000'), 100000000000)
+    assert.isAtMost(th.getDifference(compositeDebt_4, '1000002000000000000000000000'), 100000000000)
 
     /* 
     ETH:USD price = 1000000 $/E (1 million)
     coll = 300000000 ETH   (300 million)
     debt = 54321.123456789 LUSD
-   -> Expect composite debt = (54321.123456789 + 200) = 54521.123456789 LUSD */
+   -> Expect composite debt = (54321.123456789 + 2000) = 56321.123456789 LUSD */
     await priceFeed.setPrice(dec(1, 24))
     const price_3 = await priceFeed.getPrice()
     const compositeDebt_5 = (await troveManagerTester.getCompositeDebt('54321123456789000000000')).toString()
-    assert.equal(compositeDebt_5, '54521123456789000000000')
+    assert.equal(compositeDebt_5, '56321123456789000000000')
   })
 
   // --- Test ICRs with virtual debt ---
@@ -1231,7 +1231,7 @@ contract('Gas compensation tests', async accounts => {
     for (const account of _10_accounts) {
 
       const debtString = debt.toString().concat('000000000000000000')
-      await openTrove({ extraLUSDAmount: debtString, extraParams: { from: account, value: dec(30, 'ether') } })
+      await openTrove({ extraLUSDAmount: debtString, extraParams: { from: account, value: dec(300, 'ether') } })
 
       const squeezedTroveAddr = th.squeezeAddr(account)
 
@@ -1283,7 +1283,7 @@ contract('Gas compensation tests', async accounts => {
   it('Trove ordering: increasing collateral, constant debt. Price successively increases. Troves should maintain ordering by ICR', async () => {
     const _20_accounts = accounts.slice(1, 21)
 
-    let coll = 50
+    let coll = 500
     // create 20 troves, increasing collateral, constant debt = 100LUSD
     for (const account of _20_accounts) {
 
@@ -1326,7 +1326,7 @@ contract('Gas compensation tests', async accounts => {
   })
 
   it('Trove ordering: Constant raw collateral ratio (excluding virtual debt). Price successively increases. Troves should maintain ordering by ICR', async () => {
-    let collVals = [1, 5, 10, 25, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000].map(v => v * 20)
+    let collVals = [10, 25, 50, 100, 500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000, 5000000].map(v => v * 20)
     const accountsList = accounts.slice(1, collVals.length + 1)
 
     let accountIdx = 0

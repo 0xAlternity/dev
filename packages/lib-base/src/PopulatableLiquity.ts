@@ -302,4 +302,9 @@ export interface PopulatableLiquity<R = unknown, S = unknown, P = unknown>
   registerFrontend(
     kickbackRate: Decimalish
   ): Promise<PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>>;
+
+  /** {@inheritDoc TransactableLiquity.claimAirdrop} */
+  claimAirdrop(): Promise<
+    PopulatedLiquityTransaction<P, SentLiquityTransaction<S, LiquityReceipt<R, void>>>
+  >;
 }

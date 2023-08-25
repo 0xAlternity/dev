@@ -2,9 +2,10 @@ import fs from "fs";
 
 import { BigNumber, BigNumberish } from "@ethersproject/bignumber";
 import { Contract, CallOverrides, EventFilter } from "@ethersproject/contracts";
-import { AlchemyProvider } from "@ethersproject/providers";
-
+import { JsonRpcProvider } from "@ethersproject/providers";
 import { Decimal } from "@liquity/lib-base";
+
+const ALCHEMY_KEY = process.env.ALCHEMY_KEY || "";
 
 const outputFile = "eth-usd.csv";
 
@@ -14,7 +15,7 @@ const liquityDecimals = 18;
 const answerMultiplier = BigNumber.from(10).pow(liquityDecimals - answerDecimals);
 const firstRound = BigNumber.from("0x10000000000000000").mul(phase);
 
-const aggregatorAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419";
+const aggregatorAddress = "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419"; // eth-usd
 
 const aggregatorAbi = [
   "function latestAnswer() view returns (int256)",
@@ -59,23 +60,25 @@ const formatDateTime = (timestamp: number) => {
 };
 
 (async () => {
-  const provider = new AlchemyProvider("mainnet", "LfzNw5K5sLuITGhCxFObHJWMHY_1HW6M");
+  const provider = new JsonRpcProvider(
+    `https://eth-mainnet.g.alchemy.com/v2/${ALCHEMY_KEY}`,
+    "mainnet"
+  );
   const aggregator = new Contract(aggregatorAddress, aggregatorAbi, provider) as Aggregator;
 
   const getRound = (roundId: BigNumberish) =>
-    Promise.all([
-      aggregator.getTimestamp(roundId),
-      aggregator.getAnswer(roundId)
-    ]).then(([timestamp, answer]) => [
-      `${roundId}`,
-      `${timestamp}`,
-      formatDateTime(timestamp.toNumber()),
-      `${Decimal.fromBigNumberString(answer.mul(answerMultiplier).toHexString())}`
-    ]);
+    Promise.all([aggregator.getTimestamp(roundId), aggregator.getAnswer(roundId)]).then(
+      ([timestamp, answer]) => [
+        `${roundId}`,
+        `${timestamp}`,
+        formatDateTime(timestamp.toNumber()),
+        `${Decimal.fromBigNumberString(answer.mul(answerMultiplier).toHexString())}`
+      ]
+    );
 
   const roundsPerPass = 10;
-  // const latestRound = await aggregator.latestRound();
-  const latestRound = BigNumber.from("0x200000000000015A6");
+  const latestRound = await aggregator.latestRound();
+  const firstRound = latestRound.sub(100);
   const totalRounds = latestRound.sub(firstRound).toNumber();
   const passes = Math.ceil((totalRounds + 1) / roundsPerPass);
 

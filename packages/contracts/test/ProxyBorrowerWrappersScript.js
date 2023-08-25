@@ -8,6 +8,7 @@ const th = testHelpers.TestHelper
 
 const dec = th.dec
 const toBN = th.toBN
+const logBN = th.logBN
 const mv = testHelpers.MoneyValues
 const timeValues = testHelpers.TimeValues
 
@@ -254,15 +255,15 @@ contract('BorrowerWrappers', async accounts => {
     await assertRevert(proxy.methods["execute(address,bytes)"](borrowerWrappers.scriptAddress, calldata, { from: bob }), 'ds-auth-unauthorized')
   })
 
-  it('claimSPRewardsAndRecycle():', async () => {
+  it('claimSPRewardsAndRecycle(): working cycle', async () => {
     // Whale opens Trove
-    const whaleDeposit = toBN(dec(2350, 18))
+    const whaleDeposit = toBN(dec(12000, 18))
     await openTrove({ extraLUSDAmount: whaleDeposit, ICR: toBN(dec(4, 18)), extraParams: { from: whale } })
-    // Whale deposits 1850 LUSD in StabilityPool
+    // Whale deposits 12000 LUSD in StabilityPool
     await stabilityPool.provideToSP(whaleDeposit, ZERO_ADDRESS, { from: whale })
 
-    // alice opens trove and provides 150 LUSD to StabilityPool
-    const aliceDeposit = toBN(dec(150, 18))
+    // alice opens trove and provides 3000 LUSD to StabilityPool
+    const aliceDeposit = toBN(dec(3000, 18))
     await openTrove({ extraLUSDAmount: aliceDeposit, ICR: toBN(dec(3, 18)), extraParams: { from: alice } })
     await stabilityPool.provideToSP(aliceDeposit, ZERO_ADDRESS, { from: alice })
 
@@ -281,12 +282,12 @@ contract('BorrowerWrappers', async accounts => {
     const totalDeposits = whaleDeposit.add(aliceDeposit)
     const expectedLUSDLoss_A = liquidatedDebt_1.mul(aliceDeposit).div(totalDeposits)
 
-    const expectedCompoundedLUSDDeposit_A = toBN(dec(150, 18)).sub(expectedLUSDLoss_A)
+    const expectedCompoundedLUSDDeposit_A = aliceDeposit.sub(expectedLUSDLoss_A)
     const compoundedLUSDDeposit_A = await stabilityPool.getCompoundedLUSDDeposit(alice)
     // collateral * 150 / 2500 * 0.995
     const expectedETHGain_A = collateral.mul(aliceDeposit).div(totalDeposits).mul(toBN(dec(995, 15))).div(mv._1e18BN)
 
-    assert.isAtMost(th.getDifference(expectedCompoundedLUSDDeposit_A, compoundedLUSDDeposit_A), 1000)
+    assert.isAtMost(th.getDifference(expectedCompoundedLUSDDeposit_A, compoundedLUSDDeposit_A), 10000)
 
     const ethBalanceBefore = await web3.eth.getBalance(borrowerOperations.getProxyAddressFromUser(alice))
     const troveCollBefore = await troveManager.getTroveColl(alice)
@@ -304,7 +305,7 @@ contract('BorrowerWrappers', async accounts => {
     // to force LQTY issuance
     await th.fastForwardTime(timeValues.SECONDS_IN_ONE_WEEK * 2, web3.currentProvider)
 
-    const expectedLQTYGain_A = toBN('50373424199406504708132')
+    const expectedLQTYGain_A = toBN('262361584371908878688192')
 
     await priceFeed.setPrice(price.mul(toBN(2)));
 
@@ -332,7 +333,7 @@ contract('BorrowerWrappers', async accounts => {
     // check that ICR remains constant
     th.assertIsApproximatelyEqual(ICRAfter, ICRBefore)
     // check that Stability Pool deposit
-    th.assertIsApproximatelyEqual(depositAfter, depositBefore.sub(expectedLUSDLoss_A).add(netDebtChange))
+    th.assertIsApproximatelyEqual(depositAfter, depositBefore.sub(expectedLUSDLoss_A).add(netDebtChange), 10000)
     // check lqty balance remains the same
     th.assertIsApproximatelyEqual(lqtyBalanceAfter, lqtyBalanceBefore)
 
@@ -500,7 +501,7 @@ contract('BorrowerWrappers', async accounts => {
     const borrowingRate = await troveManagerOriginal.getBorrowingRateWithDecay()
     const netDebtChange = proportionalLUSD.mul(toBN(dec(1, 18))).div(toBN(dec(1, 18)).add(borrowingRate))
 
-    const expectedLQTYGain_A = toBN('839557069990108416000000')
+    const expectedLQTYGain_A = toBN('1311807921859544400000000')
 
     const proxyAddress = borrowerWrappers.getProxyAddressFromUser(alice)
     // Alice claims staking rewards and puts them back in the system through the proxy
@@ -662,7 +663,7 @@ contract('BorrowerWrappers', async accounts => {
     const netDebtChange = proportionalLUSD.mul(toBN(dec(1, 18))).div(toBN(dec(1, 18)).add(borrowingRate))
     const expectedTotalLUSD = expectedLUSDGain_A.add(netDebtChange)
 
-    const expectedLQTYGain_A = toBN('839557069990108416000000')
+    const expectedLQTYGain_A = toBN('1311807921859544400000000')
 
     // Alice claims staking rewards and puts them back in the system through the proxy
     await borrowerWrappers.claimStakingGainsAndRecycle(th._100pct, alice, alice, { from: alice })

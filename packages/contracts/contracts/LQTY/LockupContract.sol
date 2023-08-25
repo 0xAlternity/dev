@@ -3,84 +3,148 @@
 pragma solidity 0.6.11;
 
 import "../Dependencies/SafeMath.sol";
-import "../Interfaces/ILQTYToken.sol";
+import "../Dependencies/IERC20.sol";
+import "../Dependencies/SafeERC20.sol";
+import "../Dependencies/Ownable.sol";
 
-/*
-* The lockup contract architecture utilizes a single LockupContract, with an unlockTime. The unlockTime is passed as an argument 
-* to the LockupContract's constructor. The contract's balance can be withdrawn by the beneficiary when block.timestamp > unlockTime. 
-* At construction, the contract checks that unlockTime is at least one year later than the Liquity system's deployment time. 
-
-* Within the first year from deployment, the deployer of the LQTYToken (Liquity AG's address) may transfer LQTY only to valid 
-* LockupContracts, and no other addresses (this is enforced in LQTYToken.sol's transfer() function).
-* 
-* The above two restrictions ensure that until one year after system deployment, LQTY tokens originating from Liquity AG cannot 
-* enter circulating supply and cannot be staked to earn system revenue.
-*/
-contract LockupContract {
-    using SafeMath for uint;
+contract LockupContract is Ownable {
+    using SafeMath for uint256;
+    using SafeMath for uint64;
 
     // --- Data ---
-    string constant public NAME = "LockupContract";
+    string public constant NAME = "LockupContract";
 
-    uint constant public SECONDS_IN_ONE_YEAR = 31536000; 
-
-    address public immutable beneficiary;
-
-    ILQTYToken public lqtyToken;
-
-    // Unlock time is the Unix point in time at which the beneficiary can withdraw.
-    uint public unlockTime;
+    mapping(address => uint256) private _released;
+    address public _beneficiary;
+    uint64 private immutable _start;
+    uint64 private immutable _duration;
 
     // --- Events ---
 
-    event LockupContractCreated(address _beneficiary, uint _unlockTime);
-    event LockupContractEmptied(uint _LQTYwithdrawal);
+    event LockupContractCreated(address indexed _beneficiary, uint256 indexed _unlockTime);
+    event LockupContractReleased(address indexed _token, uint256 indexed _amount);
+    event BeneficiaryUpdated(address indexed _beneficiary);
 
     // --- Functions ---
 
-    constructor 
-    (
-        address _lqtyTokenAddress, 
-        address _beneficiary, 
-        uint _unlockTime
-    )
-        public 
+    constructor(
+        address ownerAddress,
+        address beneficiaryAddress,
+        uint64 startTimestamp,
+        uint64 durationSeconds
+    ) public {
+        require(beneficiaryAddress != address(0), "LockupContract: beneficiary is zero address");
+        _beneficiary = beneficiaryAddress;
+        _start = startTimestamp;
+        _duration = durationSeconds;
+        emit LockupContractCreated(beneficiaryAddress, startTimestamp.add(durationSeconds));
+        // transfer ownership to the deployer address
+        // transferring twice is not optimal, but I'm too lazy to update Ownable.sol
+        _transferOwnership(ownerAddress);
+    }
+
+    /**
+     * @dev Getter for the beneficiary address.
+     */
+    function beneficiary() public view returns (address) {
+        return _beneficiary;
+    }
+
+    /**
+     * @dev Getter for the start timestamp.
+     */
+    function start() public view returns (uint256) {
+        return _start;
+    }
+
+    /**
+     * @dev Getter for the vesting duration.
+     */
+    function duration() public view returns (uint256) {
+        return _duration;
+    }
+
+    /**
+     * @dev Getter for the end timestamp.
+     */
+    function end() public view returns (uint256) {
+        return start().add(duration());
+    }
+
+    /**
+     * @dev Amount of token already released
+     */
+    function released(address token) public view returns (uint256) {
+        return _released[token];
+    }
+
+    /**
+     * @dev Getter for the amount of releasable `token` tokens. `token` should be the address of an
+     * IERC20 contract.
+     */
+    function releasable(address token) public view returns (uint256) {
+        return vestedAmount(token, block.timestamp).sub(released(token));
+    }
+
+    function release(address token) external {
+        require(msg.sender == beneficiary(), "LockupContract: caller is not the beneficiary");
+
+        uint256 amount = releasable(token);
+        _released[token] = _released[token].add(amount);
+        emit LockupContractReleased(token, amount);
+        SafeERC20.safeTransfer(IERC20(token), beneficiary(), amount);
+    }
+
+    /**
+     * @dev Calculates the amount of tokens that has already vested. Default implementation is a linear vesting curve.
+     */
+    function vestedAmount(address token, uint256 timestamp) public view returns (uint256) {
+        uint256 _balance = IERC20(token).balanceOf(address(this));
+        return _vestingSchedule(_balance.add(released(token)), timestamp);
+    }
+
+    /**
+     * @dev Virtual implementation of the vesting formula. This returns the amount vested, as a function of time, for
+     * an asset given its total historical allocation.
+     */
+    function _vestingSchedule(uint256 totalAllocation, uint256 timestamp)
+        internal
+        view
+        returns (uint256)
     {
-        lqtyToken = ILQTYToken(_lqtyTokenAddress);
-
-        /*
-        * Set the unlock time to a chosen instant in the future, as long as it is at least 1 year after
-        * the system was deployed 
-        */
-        _requireUnlockTimeIsAtLeastOneYearAfterSystemDeployment(_unlockTime);
-        unlockTime = _unlockTime;
-        
-        beneficiary =  _beneficiary;
-        emit LockupContractCreated(_beneficiary, _unlockTime);
+        if (timestamp < start()) {
+            return 0;
+        } else if (timestamp > end()) {
+            return totalAllocation;
+        } else {
+            return (totalAllocation.mul(timestamp.sub(start()))).div(duration());
+        }
     }
 
-    function withdrawLQTY() external {
-        _requireCallerIsBeneficiary();
-        _requireLockupDurationHasPassed();
+    // Owner functions
 
-        ILQTYToken lqtyTokenCached = lqtyToken;
-        uint LQTYBalance = lqtyTokenCached.balanceOf(address(this));
-        lqtyTokenCached.transfer(beneficiary, LQTYBalance);
-        emit LockupContractEmptied(LQTYBalance);
+    /**
+     * @dev Updates beneficiary to the new address
+     */
+    function updateBeneficiary(address beneficiaryAddress) external onlyOwner {
+        require(beneficiaryAddress != address(0), "LockupContract: beneficiary is zero address");
+        _beneficiary = beneficiaryAddress;
+        BeneficiaryUpdated(beneficiaryAddress);
     }
 
-    // --- 'require' functions ---
-
-    function _requireCallerIsBeneficiary() internal view {
-        require(msg.sender == beneficiary, "LockupContract: caller is not the beneficiary");
+    /**
+     * @dev Leaves the contract without owner. It will not be possible to call
+     * `onlyOwner` functions anymore.
+     */
+    function renounceOwnership() external onlyOwner {
+        _renounceOwnership();
     }
 
-    function _requireLockupDurationHasPassed() internal view {
-        require(block.timestamp >= unlockTime, "LockupContract: The lockup duration must have passed");
-    }
-
-    function _requireUnlockTimeIsAtLeastOneYearAfterSystemDeployment(uint _unlockTime) internal view {
-        uint systemDeploymentTime = lqtyToken.getDeploymentStartTime();
-        require(_unlockTime >= systemDeploymentTime.add(SECONDS_IN_ONE_YEAR), "LockupContract: unlock time must be at least one year after system deployment");
+    /**
+     * @dev Transfers ownership of the contract to a new account (`newOwner`).
+     * Can only be called by the current owner.
+     */
+    function transferOwnership(address newOwner) external onlyOwner {
+        _transferOwnership(newOwner);
     }
 }
