@@ -5,6 +5,7 @@ import { useLiquitySelector } from "@liquity/lib-react";
 
 import { useLiquity } from "../../hooks/LiquityContext";
 import { useTransactionFunction } from "../Transaction";
+import { COIN } from "../../strings";
 
 const selectLQTYStake = ({ lqtyStake }: LiquityStoreState) => lqtyStake;
 
@@ -19,7 +20,7 @@ export const StakingGainsAction: React.FC = () => {
 
   return (
     <Button onClick={sendTransaction} disabled={collateralGain.isZero && lusdGain.isZero}>
-      Claim gains
+      Claim ETH and {COIN}
     </Button>
   );
 };

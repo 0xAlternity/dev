@@ -7,12 +7,13 @@ const baseColors = {
   green: "#28c081",
   yellow: "#fd9d28",
   red: "#dc2c10",
-  lightRed: "#ff755f"
+  lightRed: "#ff755f",
+  secondary: "#1228A5"
 };
 
 const colors = {
   primary: baseColors.blue,
-  secondary: baseColors.purple,
+  secondary: baseColors.secondary,
   accent: baseColors.cyan,
 
   success: baseColors.green,

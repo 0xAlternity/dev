@@ -268,7 +268,7 @@ export const EditableRow: React.FC<EditableRowProps> = ({
             }}
             disabled={maxedOut}
           >
-            max
+            Max
           </Button>
         )}
       </StaticAmounts>

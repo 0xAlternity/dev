@@ -15,7 +15,7 @@ const View: React.FC = () => {
         </Flex>
       </Heading>
       <Box sx={{ p: [2, 3] }}>
-        <InfoMessage title={`You aren not eliglible for the ${GT} airdrop.`} />
+        <InfoMessage title={`You aren't eliglible for ${GT} airdrop.`} />
       </Box>
     </Card>
   );

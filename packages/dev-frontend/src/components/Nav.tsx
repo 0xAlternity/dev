@@ -6,14 +6,14 @@ export const Nav: React.FC = () => {
     <Box as="nav" sx={{ display: ["none", "flex"], alignItems: "center", flex: 1 }}>
       <Flex>
         <Link to="/">Dashboard</Link>
-        <Link to="/airdrop">Airdrop</Link>
-        <NavLink href="https://balancer.fi" target="_blank">
+        <Link sx={{ fontSize: 1 }} to="/airdrop">
+          Airdrop
+        </Link>
+        {/* <NavLink sx={{ fontSize: 1 }} href="https://balancer.fi" target="_blank">
           Farm ➡️
-        </NavLink>
-      </Flex>
-      <Flex sx={{ justifyContent: "flex-end", mr: 3, flex: 1 }}>
+        </NavLink> */}
         <Link sx={{ fontSize: 1 }} to="/risky-troves">
-          Risky Troves
+          Troves
         </Link>
         <Link sx={{ fontSize: 1 }} to="/redemption">
           Redemption

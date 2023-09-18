@@ -8,6 +8,7 @@ import { useLiquity } from "../hooks/LiquityContext";
 import { LiquityLogo } from "./LiquityLogo";
 import { Nav } from "./Nav";
 import { SideNav } from "./SideNav";
+import { Link } from "./Link";
 
 const logoHeight = "32px";
 
@@ -25,7 +26,9 @@ export const Header: React.FC = ({ children }) => {
   return (
     <Container variant="header">
       <Flex sx={{ alignItems: "center", flex: 1 }}>
-        <LiquityLogo height={logoHeight} />
+        <Link to="/" sx={{ margin: 0 }}>
+          <LiquityLogo height={logoHeight} />
+        </Link>
 
         <Box
           sx={{

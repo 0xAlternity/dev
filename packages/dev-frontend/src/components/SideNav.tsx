@@ -39,10 +39,10 @@ export const SideNav: React.FC = () => {
         <Box as="nav" sx={{ m: 3, mt: 1, p: 0 }} onClick={() => setIsVisible(false)}>
           <Link to="/">Dashboard</Link>
           <Link to="/airdrop">Airdrop</Link>
-          <NavLink href="https://balancer.fi" target="_blank">
+          {/* <NavLink href="https://balancer.fi" target="_blank">
             Farm ➡️
-          </NavLink>
-          <Link to="/risky-troves">Risky Troves</Link>
+          </NavLink> */}
+          <Link to="/risky-troves">Troves</Link>
           <Link to="/redemption">Redemption</Link>
         </Box>
       </Flex>
