@@ -64,7 +64,7 @@ const App = () => {
         <Icon name="exclamation-triangle" /> Alternity is not yet deployed to{" "}
         {chainId === 1 ? "mainnet" : "this network"}.
       </Heading>
-      Please switch to Sepolia.
+      Please switch to Ethereum Mainnet or Sepolia.
     </Flex>
   );
 

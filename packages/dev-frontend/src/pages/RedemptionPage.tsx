@@ -7,8 +7,8 @@ import { useLiquity } from "../hooks/LiquityContext";
 import { Icon } from "../components/Icon";
 import { COIN } from "../strings";
 
-const uniLink = (lusdAddress: string) =>
-  `https://app.uniswap.org/#/swap?inputCurrency=${lusdAddress}&outputCurrency=ETH`;
+const balLink = (lusdAddress: string) =>
+  `https://app.balancer.fi/#/ethereum/swap/${lusdAddress}/0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2`;
 
 export const RedemptionPage: React.FC = () => {
   const {
@@ -29,8 +29,8 @@ export const RedemptionPage: React.FC = () => {
               </Paragraph>
               <Paragraph sx={{ mt: 2 }}>
                 Most of the time you will get a better rate for converting {COIN} to ETH on{" "}
-                <Link href={uniLink(addresses["lusdToken"])} target="_blank">
-                  Uniswap <Icon name="external-link-alt" size="xs" />
+                <Link href={balLink(addresses["lusdToken"])} target="_blank">
+                  Balancer <Icon name="external-link-alt" size="xs" />
                 </Link>{" "}
                 or other exchanges.
               </Paragraph>

@@ -17,7 +17,7 @@ export const NoStake: React.FC = () => {
         </InfoMessage>
 
         <Flex variant="layout.actions">
-          <Button onClick={() => dispatch({ type: "startAdjusting" })}>Start staking</Button>
+          <Button onClick={() => dispatch({ type: "startAdjusting" })}>Start Staking</Button>
         </Flex>
       </Box>
     </Card>
