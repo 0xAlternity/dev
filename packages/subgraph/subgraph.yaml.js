@@ -14,7 +14,7 @@ const yaml = (strings, ...keys) =>
 const manifest = yaml`
 specVersion: 0.0.2
 description: Liquity is a decentralized borrowing protocol offering interest-free liquidity against collateral in Ether.
-repository: https://github.com/liquity/dev/tree/main/packages/subgraph
+repository: https://github.com/alternity/dev/tree/main/packages/subgraph
 schema:
   file: ./schema.graphql
 dataSources:
@@ -29,7 +29,7 @@ dataSources:
       file: ./src/mappings/TroveManager.ts
       language: wasm/assemblyscript
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       entities:
         - Global
         - User
@@ -64,7 +64,7 @@ dataSources:
       file: ./src/mappings/BorrowerOperations.ts
       language: wasm/assemblyscript
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       entities:
         - Global
         - User
@@ -91,7 +91,7 @@ dataSources:
       file: ./src/mappings/PriceFeed.ts
       language: wasm/assemblyscript
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       entities:
         - Global
         - Transaction
@@ -114,7 +114,7 @@ dataSources:
       file: ./src/mappings/StabilityPool.ts
       language: wasm/assemblyscript
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       entities:
         - Global
         - User
@@ -146,7 +146,7 @@ dataSources:
       file: ./src/mappings/CollSurplusPool.ts
       language: wasm/assemblyscript
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       entities:
         - Global
         - User
@@ -171,7 +171,7 @@ dataSources:
       file: ./src/mappings/LqtyStake.ts
       language: wasm/assemblyscript
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       entities:
         - Global
         - User
@@ -202,7 +202,7 @@ ${[
       file: ./src/mappings/Token.ts
       language: wasm/assemblyscript
       kind: ethereum/events
-      apiVersion: 0.0.4
+      apiVersion: 0.0.6
       entities:
         - Global
         - User
