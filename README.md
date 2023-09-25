@@ -1,6 +1,5 @@
 # Alternity System Summary
-
-[![Coverage Status](https://coveralls.io/repos/github/0xAlternity/dev/badge.svg)](https://coveralls.io/github/0xAlternity/dev) [![Application](https://img.shields.io/badge/Application-green)](https://app.alternity.finance) [![Telegram](https://img.shields.io/badge/Telegram-blue?logo=telegram)](https://t.me/alternityprot) [![X](https://img.shields.io/badge/Twitter-black?logo=x)](https://x.com/0xalternity)
+[![Test contracts](https://github.com/0xAlternity/dev/actions/workflows/test-contracts.yml/badge.svg)](https://github.com/0xAlternity/dev/actions/workflows/test-contracts.yml) [![Coverage Status](https://coveralls.io/repos/github/0xAlternity/dev/badge.svg)](https://coveralls.io/github/0xAlternity/dev) [![Application](https://img.shields.io/badge/Application-green)](https://app.alternity.finance) [![Telegram](https://img.shields.io/badge/Telegram-blue?logo=telegram)](https://t.me/alternityprot) [![X](https://img.shields.io/badge/Twitter-black?logo=x)](https://x.com/0xalternity)
 
 - [Alternity System Summary](#alternity-system-summary)
   - [Alternity Overview](#alternity-overview)
