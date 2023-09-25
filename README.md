@@ -1,6 +1,6 @@
 # Alternity System Summary
 
-![Tests](https://github.com/0xAlternity/dev/workflows/test-contracts/badge.svg) [![Application](https://img.shields.io/badge/Applicartion-gre)](https://app.alternity.finance) [![Telegram](https://img.shields.io/badge/Telegram-blue?logo=telegram)](https://t.me/alternityprot) [![X](https://img.shields.io/badge/Twitter-black?logo=x)](https://x.com/0xalternity)
+[![Coverage Status](https://coveralls.io/repos/github/0xAlternity/dev/badge.svg)](https://coveralls.io/github/0xAlternity/dev) [![Application](https://img.shields.io/badge/Application-green)](https://app.alternity.finance) [![Telegram](https://img.shields.io/badge/Telegram-blue?logo=telegram)](https://t.me/alternityprot) [![X](https://img.shields.io/badge/Twitter-black?logo=x)](https://x.com/0xalternity)
 
 - [Alternity System Summary](#alternity-system-summary)
   - [Alternity Overview](#alternity-overview)
