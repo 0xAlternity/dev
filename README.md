@@ -3,6 +3,7 @@
 
 - [Alternity System Summary](#alternity-system-summary)
   - [Alternity Overview](#alternity-overview)
+  - [Liquity Fork Details](#liquity-fork-details)
   - [Liquidation and the Stability Pool](#liquidation-and-the-stability-pool)
     - [Liquidation gas costs](#liquidation-gas-costs)
     - [Liquidation Logic](#liquidation-logic)
@@ -115,6 +116,38 @@ After opening a Trove with some Ether, users may issue ("borrow") tokens such th
 The tokens are freely exchangeable - anyone with an Ethereum address can send or receive LCNY tokens, whether they have an open Trove or not. The tokens are burned upon repayment of a Trove's debt.
 
 The Alternity system regularly updates the ETH:CNY price via a decentralized data feeds. When a Trove falls below a minimum collateralization ratio (MCR) of 110%, it is considered under-collateralized, and is vulnerable to liquidation.
+
+## Liquity Fork Details
+
+We forked Liquity repository from commit `57d9bb013ff878442b763312c3374fe4b82c6403`. 
+
+To minimize changes to the contracts and supporting libraries, we haven't modified contract names. Most of the changes were made to the `PriceFeed.sol` contract, replacing USD with CNY and using two price oracles, `ETH/USD` and `CNY/USD`, instead of just `ETH/USD` which was used by Liquity.
+
+To review all the changes made to the contracts, you can clone the repository and execute this command:
+`git diff --stat 57d9bb013ff878442b763312c3374fe4b82c6403..origin/main -- packages/contracts/contracts`
+
+This command will show you all the changes we made to the liquity's contracts. You can review example output from above command below:
+```
+ packages/contracts/contracts/Dependencies/Address.sol              | 224 +++++++++++++++++
+ packages/contracts/contracts/Dependencies/ITellor.sol              | 815 ++++++++++++++++++++++++++----------------------------------
+ packages/contracts/contracts/Dependencies/LiquityBase.sol          |   4 +-
+ packages/contracts/contracts/Dependencies/MerkleProof.sol          |  37 +++
+ packages/contracts/contracts/Dependencies/Ownable.sol              |  12 +-
+ packages/contracts/contracts/Dependencies/SafeERC20.sol            | 113 +++++++++
+ packages/contracts/contracts/Dependencies/TellorCaller.sol         |  85 +++++--
+ packages/contracts/contracts/Interfaces/ILockupContractFactory.sol |  12 +-
+ packages/contracts/contracts/Interfaces/IMerkleDistributor.sol     |  18 ++
+ packages/contracts/contracts/Interfaces/ITellorCaller.sol          |   4 +-
+ packages/contracts/contracts/LQTY/CommunityIssuance.sol            |   4 +-
+ packages/contracts/contracts/LQTY/LQTYToken.sol                    |  50 ++--
+ packages/contracts/contracts/LQTY/LockupContract.sol               | 182 +++++++++-----
+ packages/contracts/contracts/LQTY/LockupContractFactory.sol        |  69 +++--
+ packages/contracts/contracts/LQTY/MerkleDistributor.sol            |  73 ++++++
+ packages/contracts/contracts/LUSDToken.sol                         |   4 +-
+ packages/contracts/contracts/PriceFeed.sol                         | 490 +++++++++++++++++++++++++-----------
+ packages/contracts/contracts/TestContracts/MockTellor.sol          |  83 +++++--
+ 18 files changed, 1509 insertions(+), 770 deletions(-)
+```
 
 ## Liquidation and the Stability Pool
 
